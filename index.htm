@@ -1,0 +1,654 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Quotify AI</title>
+<style>
+    /* Base styles */
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: 'Inter', sans-serif;
+      background: #f4f7f9;
+      color: #222;
+      padding: 20px;
+    }
+  
+    .app {
+      max-width: 1400px;
+      margin: auto;
+      display: grid;
+      grid-template-columns: 120px 1fr 420px;
+      gap: 18px;
+    }
+  
+    .panel {
+      background: #fff;
+      border-radius: 16px;
+      padding: 20px;
+      box-shadow: 0 6px 16px rgba(0,0,0,0.05);
+      display: flex;
+      flex-direction: column;
+    }
+  
+    /* Sidebar */
+    .sidebar { display: flex; flex-direction: column; align-items: center; gap: 18px; }
+    .logo-wrap {
+      width: 80px; height: 80px;
+      border-radius: 16px;
+    
+      display: flex; align-items: center; justify-content: center; overflow: hidden;
+    }
+    .upload-btn {
+      width: 100%; padding: 12px; border-radius: 12px; font-weight: 600;
+      cursor: pointer; color: #fff; background: linear-gradient(90deg,#4a90e2,#0077ff);
+      border: none; transition: 0.3s;
+    }
+    .upload-btn:hover { background: linear-gradient(90deg,#0077ff,#4a90e2); }
+    .logout { color: #ff4b5c; font-weight: 600; cursor: pointer; margin-top: auto; }
+  
+    /* Middle Panel */
+    .sheet-pill {
+      background: #e3f2fd;
+      padding: 10px 20px;
+      font-weight: 600;
+      text-align: center;
+      border-radius: 30px;
+      margin-bottom: 20px;
+      color: #0b5bd8;
+    }
+    .detected-box {
+      border: 1px solid #e0e0e0;
+      border-radius: 12px;
+      background: #fff;
+      padding: 20px;
+      display: flex; flex-direction: column; gap: 16px;
+    }
+    .tag {
+        background: #d5e7ff;
+  padding: 8px 14px;
+  border-radius: 20px;
+  font-weight: 700;
+  color: #0b5bd8;
+  width: fit-content;
+  display: inline-block;
+  margin-bottom: 16px;
+}
+#testList {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+  
+.test-card {
+  display: flex;
+  align-items: flex-start;
+  gap: 14px;
+  padding: 16px;
+  border-radius: 12px;
+  background: #fff;
+  border: 2px solid #d7e3da;
+  transition: 0.2s;
+  cursor: pointer;
+  flex-wrap: wrap;
+}
+
+.test-card:hover {
+  border-color: #0b5bd8;
+  transform: scale(1.01);
+}
+.test-card .checkbox {
+  margin-top: 4px; /* aligns checkbox vertically with first line */
+  flex-shrink: 0; /* prevents shrinking */
+}
+    
+    .test-card.selected {  border-color: #0b5bd8;
+        background: #e8f1ff; }
+        .test-card .checkbox {
+  margin-top: 4px;
+  flex-shrink: 0;
+  width: 20px;
+  height: 20px;
+  accent-color: #0b5bd8;
+  cursor: pointer;
+}
+
+/* Test content */
+.test-card .test-content {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  min-width: 0; /* allow text wrap */
+}
+.test-card .test-title {
+  font-weight: 700;
+  font-size: 16px;
+  color: #123d2f;
+  word-break: break-word;
+}
+.test-card .reason {
+  font-size: 13px;
+  color: #5c6b63;
+  line-height: 1.4;
+}
+  
+    .test-title { font-weight: 700; font-size: 16px; color: #0b3d2e; }
+    .reason { font-size: 13px; color: #5c6b63; }
+    .checkbox { margin-top: 3px; width: 20px; height: 20px; accent-color: #0b5bd8; cursor: pointer; }
+    .extra-inputs {
+  display: flex;
+  gap: 12px;
+  flex-wrap: wrap;
+  margin-top: 6px;
+}
+.extra-inputs label {
+  font-size: 12px;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+    .extra-input { padding: 4px 6px;
+  border-radius: 6px;
+  border: 1px solid #ccc;
+  width: 80px; }
+    .test-card .test-title {
+  font-weight: 700;
+  font-size: 16px;
+  color: #123d2f;
+  word-break: break-word; /* wrap long titles */
+}
+
+.test-card .reason {
+  font-size: 13px;
+  color: #5c6b63;
+  line-height: 1.4;
+}
+  
+    /* Loader */
+    .loader {
+      width: 40px; height: 40px;
+      border: 5px solid #ccc;
+      border-top-color: #0b5bd8;
+      border-radius: 50%;
+      animation: spin 1s linear infinite;
+      margin: 20px auto;
+      display: none;
+    }
+    @keyframes spin { 100% { transform: rotate(360deg); } }
+  
+    #noTests {
+  display: none; /* default hidden */
+  text-align: center;
+  color: #b00020; /* red tone for error */
+  background-color: #ffe5e5; /* light red/pink background */
+  border: 1px solid #ff4b5c; /* darker red border */
+  padding: 16px 20px;
+  border-radius: 12px;
+  font-weight: 600;
+  font-size: 14px;
+  line-height: 1.4;
+  box-shadow: 0 4px 12px rgba(176,0,32,0.15);
+  animation: fadeIn 0.3s ease-in-out;
+}
+
+/* Optional fade-in animation */
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(-10px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+  
+    /* Right Panel */
+    .price-item {  background: #eef5ff;
+  border-radius: 8px;
+  padding: 10px 12px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-weight: 500;
+  transition: background 0.2s; }
+  .price-item:hover {
+  background: #d5e7ff;
+}
+    .price-total {  font-size: 18px;
+  font-weight: 700;
+  margin-top: 12px;
+  text-align: right;
+  color: #0b5bd8;
+  padding: 8px 0;
+  border-top: 1px solid #c0c0c0; }
+
+  #generatePDF {
+  background: #0b5bd8;
+  color: #fff;
+  font-weight: 600;
+  padding: 12px;
+  border-radius: 10px;
+  border: none;
+  margin-top: 16px;
+  transition: 0.3s;
+}
+
+#generatePDF:hover {
+  background: #004bb5;
+}
+#quoteBox em {
+  font-style: normal;       /* remove italic */
+  color: #999999;           /* light grey */
+  text-align: center;
+  font-weight: 500;
+  font-size: 14px;
+           /* gives it vertical space */
+  display: flex;
+ 
+  align-items: center;
+}
+
+  
+    .continue-btn, #generatePDF {
+      padding: 12px; width: 100%; border-radius: 10px; border: none;
+      cursor: pointer; font-weight: 700; background: #0b5bd8; color: white; margin-top: 10px;
+      transition: 0.3s;
+    }
+    .continue-btn:disabled { background: #9bbbef; cursor: not-allowed; }
+    .continue-btn:hover:not(:disabled), #generatePDF:hover { background: #004bb5; }
+  
+    .debug { margin-top:16px; background:#fafafa; border-radius:8px; padding:12px; font-family:monospace; font-size:12px; color:#222; max-height:240px; overflow:auto; border:1px solid #e0e0e0; }
+  
+    .muted { color:#666; font-size:13px; }
+    .small { font-size:12px; color:#555; }
+    .error { color:#b00020; font-weight:700; }
+  
+    /* Responsive */
+    @media (max-width: 1024px) { .app { grid-template-columns: 1fr 2fr; } }
+    @media (max-width: 768px) { .app { grid-template-columns: 1fr; } }
+    
+  </style>
+  
+</head>
+<body>
+
+<div class="app">
+
+  <!-- Sidebar -->
+  <div class="panel sidebar">
+    <div class="logo-wrap"><img src="/flux transparent.png" alt="logo" style="max-width:100%;max-height:100%"></div>
+    <button id="uploadTrigger" class="upload-btn">Upload Datasheet</button>
+    <input id="pdfUpload" type="file" accept="application/pdf" style="display:none">
+   
+    
+  </div>
+
+  <!-- Middle Panel -->
+  <div class="panel">
+    <div class="sheet-pill" id="fileNameLabel">No file selected</div>
+    <div class="detected-box">
+      <div class="tag" style="display:none;">Detected Compliance Tests</div>
+      <div id="loader" class="loader"></div>
+      <div id="noTests">No tests found. The file may be empty of tests, or AI failed to parse it. Please retry by uploading the file again</div>
+      <div id="testList"></div>
+      <button class="continue-btn" id="calculateBtn" disabled>Calculate Price</button>
+    </div>
+  </div>
+
+  <!-- Right Panel -->
+ <div class="panel">
+  <h3 style="margin-bottom:12px;color:#0b5bd8;">Final Quotation</h3>
+  <div id="priceLoader" class="loader"></div>
+  <div id="quoteBox">
+    <em>Prices will load once tests are selected...</em>
+  </div>
+  <button id="generatePDF" style="display:none;">Download PDF</button>
+</div>
+
+
+</div>
+
+<!-- JS Libraries -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+
+<script>
+let selectedTests = [];
+
+document.addEventListener("DOMContentLoaded",()=>{
+  const fileInput=document.getElementById("pdfUpload");
+  const uploadBtn=document.getElementById("uploadTrigger");
+
+  uploadBtn.addEventListener("click",()=>fileInput.click());
+
+  fileInput.addEventListener("change",async ()=>{
+    if(!fileInput.files.length) return;
+    const file=fileInput.files[0];
+    document.getElementById("fileNameLabel").textContent=file.name;
+   
+    resetTestPanel();
+    await uploadFile(file);
+    fileInput.value="";
+  });
+
+  document.getElementById("calculateBtn").addEventListener("click",calculatePricing);
+  document.getElementById("generatePDF").addEventListener("click",generatePDF);
+});
+
+
+function resetTestPanel(){
+  selectedTests = [];
+  
+  // Clear test list
+  document.getElementById("testList").innerHTML = "";
+
+  // Hide loader, noTests, and Detected Compliance Tests tag
+  document.getElementById("loader").style.display = "block";
+  document.getElementById("noTests").style.display = "none";
+  const tag = document.querySelector(".tag");
+  if(tag) tag.style.display = "none";
+
+  // Reset buttons and quotation
+  document.getElementById("calculateBtn").disabled = true;
+  document.getElementById("quoteBox").innerHTML = `<em>Prices will load once tests are selected...</em>`;
+  document.getElementById("generatePDF").style.display = "none";
+
+  // ✅ Remove fileNameLabel reset — file name will be set after reset
+}
+
+
+
+async function uploadFile(file){
+  const uploadBtn = document.getElementById("uploadTrigger");
+  uploadBtn.disabled = true;               // disable button
+  uploadBtn.style.opacity = "0.6";         // visually indicate disabled
+  uploadBtn.style.cursor = "not-allowed";  // change cursor
+
+  const formData = new FormData();
+  formData.append("datasheet", file);
+
+  try {
+    document.getElementById("loader").style.display = "block";
+    
+    const res = await fetch("https://n8n.kashinath.net/webhook/extract-tests", {
+      method:"POST",
+      body: formData,
+      mode:"cors"
+    });
+
+    const text = await res.text();
+    let json;
+    try { json = JSON.parse(text); } catch(e) { json = null; }
+
+    if (!res.ok) {
+      document.getElementById("noTests").style.display = "block";
+      return;
+    }
+
+    renderTests(json?.[0]?.tests || []);
+  } catch(err) {
+    console.error(err);
+    document.getElementById("noTests").style.display = "block";
+  } finally {
+    // Re-enable button
+    uploadBtn.disabled = false;
+    uploadBtn.style.opacity = "1";
+    uploadBtn.style.cursor = "pointer";
+    document.getElementById("loader").style.display = "none";
+  }
+}
+
+
+
+function renderTests(tests) {
+    console.log(tests);
+  const container = document.getElementById("testList");
+  const tag = document.querySelector(".tag");
+  const loader = document.getElementById("loader");
+  const noTests = document.getElementById("noTests");
+
+  loader.style.display = "none";
+  container.innerHTML = "";
+
+  if (!tests.length) {
+    noTests.style.display = "block";
+    tag.style.display = "none"; // hide tag if no tests
+    return;
+  }
+
+  tag.style.display = "inline-block"; // show tag
+
+  tests.forEach(test => {
+    const card = document.createElement("div");
+    card.className = "test-card";
+
+    let extraFieldsHTML = "";
+    if (test.fields?.includes("units"))
+      extraFieldsHTML += `<label style="font-size:12px;">Units:<input type="number" min="1" class="extra-input" data-field="units" style="width:80px;margin-left:6px;"></label>`;
+    if (test.fields?.includes("extra_hours"))
+      extraFieldsHTML += `<label style="font-size:12px;margin-left:10px;">Extra Hours:<input type="number" min="1" class="extra-input" data-field="extra_hours" style="width:80px;margin-left:6px;"></label>`;
+
+      card.innerHTML = `
+  <input type="checkbox" class="checkbox" id="${test.test_code}">
+  <div class="test-content">
+    <div class="test-title">${test.test_name}</div>
+    <div class="reason">${test.applicability_reason}</div>
+    <div style="margin-top:10px;">${extraFieldsHTML}</div>
+  </div>
+`;
+
+    const checkbox = card.querySelector(".checkbox");
+    checkbox.addEventListener("change", () => {
+      card.classList.toggle("selected", checkbox.checked);
+      updateSelectedTests();
+    });
+
+    card.querySelectorAll(".extra-input").forEach(input => {
+      input.addEventListener("input", updateSelectedTests);
+    });
+
+    card.addEventListener("click", e => {
+      if(e.target.tagName!=="INPUT"){
+        checkbox.checked = !checkbox.checked;
+        checkbox.dispatchEvent(new Event("change"));
+      }
+    });
+
+    container.appendChild(card);
+  });
+}
+
+
+function updateSelectedTests() {
+  selectedTests = [];
+  document.querySelectorAll(".test-card").forEach(card => {
+    const checkbox = card.querySelector(".checkbox");
+    if (checkbox.checked) {
+      const obj = { test_code: checkbox.id };
+      card.querySelectorAll(".extra-input").forEach(input => {
+        const val = input.value.trim();
+        if(val) obj[input.dataset.field] = Number(val);
+      });
+      selectedTests.push(obj);
+    }
+  });
+  document.getElementById("calculateBtn").disabled = selectedTests.length === 0;
+}
+
+async function calculatePricing(){
+  const priceLoader=document.getElementById("priceLoader");
+  const quoteBox=document.getElementById("quoteBox");
+  const pdfBtn=document.getElementById("generatePDF");
+  quoteBox.innerHTML=""; pdfBtn.style.display="none"; priceLoader.style.display="block";
+  const payload={ selected: selectedTests };
+  console.log(JSON.stringify(payload));
+  
+  try{
+    const res=await fetch("https://n8n.kashinath.net/webhook/calculate-prices",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify(payload),mode:"cors"});
+    const text=await res.text();
+    let json; try{json=JSON.parse(text)}catch(e){json=null;}
+   
+    priceLoader.style.display="none";
+    if(!res.ok){quoteBox.innerHTML=`<p class="error">⚠ Error calculating pricing: ${json?.message||text||`HTTP ${res.status}`}</p>`; return;}
+    const results=json?.[0]?.pricing_results??json?.pricing_results??json;
+    if(!results||!results.length){quoteBox.innerHTML=`<p class="muted">No pricing results returned from server.</p>`;pdfBtn.style.display="none";return;}
+    renderPricing(results);
+    pdfBtn.style.display="block";
+  }catch(err){console.error(err);
+    priceLoader.style.display="none";quoteBox.innerHTML=`<p class="error">⚠ Network or unexpected error: ${err.message||String(err)}</p>`;}
+}
+
+function renderPricing(results){
+  let html=""; let total=0;
+  results.forEach(item=>{
+    const name=item.test_name??item.name??item.test_code??"Unnamed test";
+    const price=Number(item.total_price??item.price??0);
+    html+=`<div class="price-item"><strong>${name}</strong> — Rs${price}</div>`;
+    total+=price;
+  });
+  html+=`<div class="price-total">Grand Total: Rs${total}</div>`;
+  document.getElementById("quoteBox").innerHTML=html;
+}
+
+async function generatePDF() {
+  const { jsPDF } = window.jspdf;
+  const doc = new jsPDF({ unit: "pt", format: "a4" });
+  const pageWidth = doc.internal.pageSize.getWidth();
+  const pageHeight = doc.internal.pageSize.getHeight();
+  const marginX = 40;
+
+  // -------------------------
+  // 1) Collect rows from DOM
+  // -------------------------
+  const rows = [];
+  document.querySelectorAll(".price-item").forEach(item => {
+    const text = item.textContent.trim(); // e.g., "Test Name — Rs123"
+    const parts = text.split("—").map(s => s.trim());
+    const description = parts[0] || "Unnamed Test";
+    const unitPrice = parseFloat((parts[1] || "0").replace(/[^\d.]/g, "")) || 0;
+    rows.push({ qty: 1, description, unitPrice, lineTotal: unitPrice });
+  });
+
+  const grandTotal = rows.reduce((sum, r) => sum + r.lineTotal, 0);
+
+  // -------------------------
+  // 2) Logo
+  // -------------------------
+  let y = 40;
+  const logoImg = document.querySelector(".logo-wrap img");
+  if (logoImg && logoImg.src) {
+    try { doc.addImage(logoImg, "PNG", marginX, y, 70, 70); } catch(e) { console.warn("Logo skipped"); }
+  }
+
+  // -------------------------
+  // 3) QUOTATION text
+  // -------------------------
+  const lineY = y + 80; // horizontal line position
+  doc.setFont("helvetica", "bold"); 
+  doc.setFontSize(20);
+  doc.text("QUOTATION", pageWidth / 2, lineY - 5, { align: "center" });
+
+  // -------------------------
+  // 4) Quote info (top-right)
+  // -------------------------
+  const today = new Date();
+  const dateStr = today.toLocaleDateString("en-GB");
+  const quoteNumber = "Q-" + today.getFullYear().toString().slice(-2) + "0001";
+  const validText = "Valid Until: 14 days";
+
+  doc.setFont("helvetica", "normal"); doc.setFontSize(10);
+  const headerX = pageWidth - marginX - 180;
+  doc.text(`Date: ${dateStr}`, headerX, y + 10);
+  doc.text(`Quote #: ${quoteNumber}`, headerX, y + 25);
+  doc.text(validText, headerX, y + 40);
+
+  // -------------------------
+  // 5) Horizontal line under QUOTATION
+  // -------------------------
+  doc.setLineWidth(0.7); 
+  doc.line(marginX, lineY, pageWidth - marginX, lineY);
+  y = lineY + 20; // start Y after line
+
+  // -------------------------
+  // 6) From / To
+  // -------------------------
+  doc.setFont("helvetica", "bold"); doc.setFontSize(11);
+  doc.text("From:", marginX, y);
+  doc.setFont("helvetica", "normal");
+
+  const fromName = "Quotation AI";
+  const fromAddress = "#2 ,7th cross,Bangalore";
+
+  y += 14;
+  doc.text(fromName, marginX, y);
+  doc.text(fromAddress, marginX, y + 12);
+
+  // -------------------------
+  // 7) Table setup
+  // -------------------------
+  const tableX = marginX;
+  const tableWidth = pageWidth - marginX * 2;
+  const colQtyWidth = 40;
+  const colDescWidth = tableWidth - colQtyWidth - 140;
+  const colUnitWidth = 70;
+  const colLineWidth = 70;
+
+  function drawTableHeader(yPos) {
+    doc.setFillColor(210, 230, 225); 
+    doc.rect(tableX, yPos, tableWidth, 22, "F");
+
+    doc.setFont("helvetica", "bold"); 
+    doc.setFontSize(11);
+    const headerY = yPos + 15;
+    doc.text("Qty", tableX + 10, headerY);
+    doc.text("Description", tableX + colQtyWidth + 10, headerY);
+    doc.text("Unit Price", tableX + colQtyWidth + colDescWidth + 5, headerY, { align: "right" });
+    doc.text("Line Total", tableX + colQtyWidth + colDescWidth + colUnitWidth + 5, headerY, { align: "right" });
+    return yPos + 26;
+  }
+
+  y += 40; // spacing after From section
+  y = drawTableHeader(y);
+
+  // -------------------------
+  // 8) Table rows
+  // -------------------------
+  rows.forEach((row, i) => {
+    if (y + 30 > pageHeight - 40) {
+      doc.addPage();
+      y = 40;
+      y = drawTableHeader(y);
+    }
+
+    doc.setFillColor(i % 2 === 0 ? 246 : 255, 246, 246);
+    doc.rect(tableX, y, tableWidth, 22, "F");
+
+    const rowY = y + 15;
+    doc.setFont("helvetica", "normal"); doc.setFontSize(10);
+    doc.text(String(row.qty), tableX + 10, rowY);
+    doc.text(row.description, tableX + colQtyWidth + 10, rowY);
+    doc.text(`Rs${row.unitPrice}`, tableX + colQtyWidth + colDescWidth + 5, rowY, { align: "right" });
+    doc.text(`Rs${row.lineTotal}`, tableX + colQtyWidth + colDescWidth + colUnitWidth + 5, rowY, { align: "right" });
+
+    y += 26;
+  });
+
+  // -------------------------
+  // 9) Total row
+  // -------------------------
+  y += 10;
+  doc.setFont("helvetica", "bold"); doc.setFontSize(11);
+  doc.setLineWidth(0.5);
+  doc.line(tableX + colQtyWidth + colDescWidth + colUnitWidth, y-12, tableX + tableWidth, y-12);
+  doc.text("Grand Total:", tableX + colQtyWidth + colDescWidth + colUnitWidth + 5, y, { align: "right" });
+  doc.text(`Rs${grandTotal}`, tableX + tableWidth, y, { align: "right" });
+
+  // -------------------------
+  // 10) Save
+  // -------------------------
+  doc.save("Quotation.pdf");
+}
+
+
+
+</script>
+
+</body>
+</html>

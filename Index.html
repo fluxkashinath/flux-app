@@ -1,0 +1,1083 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Quotify AI</title>
+
+  <!-- Optional: Inter font -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: 'Inter', system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
+      background: radial-gradient(circle at top left, #e0f2ff 0, #f4f7f9 40%, #eef2f7 100%);
+      color: #222;
+      padding: 20px;
+      min-height: 100vh;
+    }
+
+    .app-shell {
+      max-width: 1440px;
+      margin: 0 auto;
+    }
+
+    .app-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 22px;
+      gap: 16px;
+    }
+
+    .brand-left {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+    }
+
+    .brand-logo {
+      width: 42px;
+      height: 42px;
+      border-radius: 12px;
+      background: #0b5bd8;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      overflow: hidden;
+      box-shadow: 0 4px 12px rgba(11, 91, 216, 0.35);
+    }
+
+    .brand-logo img {
+      max-width: 90%;
+      max-height: 90%;
+    }
+
+    .brand-text h1 {
+      font-size: 22px;
+      font-weight: 700;
+      letter-spacing: 0.02em;
+      color: #0b264b;
+    }
+
+    .brand-text p {
+      font-size: 13px;
+      color: #6c798b;
+    }
+
+    .header-right {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      font-size: 12px;
+      color: #6c798b;
+    }
+
+    .badge {
+      padding: 4px 10px;
+      border-radius: 999px;
+      background: rgba(11, 91, 216, 0.08);
+      color: #0b5bd8;
+      font-weight: 600;
+      font-size: 11px;
+      letter-spacing: 0.05em;
+      text-transform: uppercase;
+    }
+
+    /* Main layout */
+    .app {
+      display: grid;
+      grid-template-columns: 150px 1.35fr 0.95fr;
+      gap: 18px;
+    }
+
+    .panel {
+      background: #ffffff;
+      border-radius: 18px;
+      padding: 20px;
+      box-shadow: 0 12px 30px rgba(15, 23, 42, 0.06);
+      display: flex;
+      flex-direction: column;
+      min-height: 420px;
+      border: 1px solid rgba(148, 163, 184, 0.18);
+    }
+
+    /* Sidebar */
+    .sidebar {
+      align-items: center;
+      gap: 18px;
+      text-align: center;
+    }
+
+    .logo-wrap {
+      width: 88px;
+      height: 88px;
+      border-radius: 24px;      
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      overflow: hidden;
+      box-shadow: 0 0px 1px;
+      margin-bottom: 6px;
+    }
+
+    .logo-wrap img {
+      max-width: 82%;
+      max-height: 82%;
+    }
+
+    .sidebar-caption {
+      font-size: 12px;
+      color: #6b7280;
+      line-height: 1.4;
+    }
+
+    .upload-btn {
+      width: 100%;
+      margin-top: 10px;
+      padding: 11px 12px;
+      border-radius: 999px;
+      font-weight: 600;
+      cursor: pointer;
+      color: #fff;
+      background: linear-gradient(135deg, #2563eb, #0ea5e9);
+      border: none;
+      transition: transform 0.12s ease, box-shadow 0.12s ease, background 0.2s;
+      font-size: 13px;
+      box-shadow: 0 10px 22px rgba(37, 99, 235, 0.35);
+    }
+
+    .upload-btn:hover {
+      transform: translateY(-1px);
+      box-shadow: 0 12px 26px rgba(37, 99, 235, 0.45);
+      background: linear-gradient(135deg, #1d4ed8, #0284c7);
+    }
+
+    .upload-btn:disabled {
+      opacity: 0.6;
+      cursor: not-allowed;
+      box-shadow: none;
+      transform: none;
+    }
+
+    .sidebar-footer {
+      margin-top: auto;
+      font-size: 11px;
+      color: #9ca3af;
+    }
+
+    /* Middle panel */
+    .sheet-pill {
+      background: #e3f2fd;
+      padding: 9px 16px;
+      font-weight: 600;
+      text-align: center;
+      border-radius: 999px;
+      margin-bottom: 16px;
+      color: #0b5bd8;
+      font-size: 13px;
+    }
+
+    .detected-box {
+      border-radius: 14px;
+      background: #f9fafb;
+      padding: 18px;
+      display: flex;
+      flex-direction: column;
+      gap: 14px;
+      flex: 1;
+      border: 1px dashed rgba(148, 163, 184, 0.6);
+    }
+
+    .tag {
+      background: #dbeafe;
+      padding: 6px 14px;
+      border-radius: 999px;
+      font-weight: 600;
+      color: #1d4ed8;
+      font-size: 12px;
+      width: fit-content;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .tag::before {
+      content: "";
+      width: 8px;
+      height: 8px;
+      border-radius: 999px;
+      background: #22c55e;
+      box-shadow: 0 0 0 5px rgba(34, 197, 94, 0.2);
+    }
+
+    .live {
+      background: #03060b;
+      padding: 6px 14px;
+      border-radius: 999px;
+      font-weight: 600;
+      color: #1d4ed8;
+      font-size: 12px;
+      width: fit-content;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .live::before {
+      content: "";
+      width: 8px;
+      height: 8px;
+      border-radius: 999px;
+      background: #fc0e0e;
+      box-shadow: 0 0 0 5px rgba(34, 197, 94, 0.2);
+    }
+
+    #testList {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+      overflow-y: auto;
+      padding-right: 4px;
+    }
+
+    /* Standard cards */
+    .standard-card {
+      border-radius: 12px;
+      background: #ffffff;
+      box-shadow: 0 6px 18px rgba(15, 23, 42, 0.04);
+      overflow: hidden;
+      border: 1px solid rgba(148, 163, 184, 0.45);
+      transition: box-shadow 0.18s ease, border-color 0.18s ease, transform 0.12s ease;
+    }
+
+    .standard-card.expanded {
+      box-shadow: 0 12px 30px rgba(15, 23, 42, 0.08);
+      border-color: #2563eb;
+      transform: translateY(-1px);
+    }
+
+    .standard-header {
+      padding: 13px 16px;
+      background: linear-gradient(135deg, #eff6ff, #e0f2fe);
+      cursor: pointer;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      transition: background 0.15s ease;
+    }
+
+    .standard-header:hover {
+      background: linear-gradient(135deg, #dbeafe, #bae6fd);
+    }
+
+    .standard-title-group {
+      display: flex;
+      flex-direction: column;
+      gap: 3px;
+      flex: 1;
+      padding-right: 10px;
+    }
+
+    .standard-title {
+      font-weight: 700;
+      font-size: 15px;
+      color: #0b5bd8;
+    }
+
+    .standard-code-pill {
+      font-size: 11px;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+      color: #1d4ed8;
+      background: #dbeafe;
+      padding: 2px 9px;
+      border-radius: 999px;
+      display: inline-block;
+      margin-left: 6px;
+    }
+
+    .standard-description {
+      font-size: 12px;
+      color: #6b7280;
+    }
+
+    .toggle-icon {
+      font-size: 18px;
+      color: #1d4ed8;
+      transition: transform 0.26s ease;
+    }
+
+    .standard-card.expanded .toggle-icon {
+      transform: rotate(90deg);
+    }
+
+    .applicable-tests {
+      max-height: 0;
+      overflow: hidden;
+      transition: max-height 0.35s ease;
+      padding: 0 14px;
+      background: #ffffff;
+    }
+
+    .standard-card.expanded .applicable-tests {
+      max-height: 1000px;
+      padding-bottom: 12px;
+    }
+
+    .test-item-list {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      padding-top: 10px;
+    }
+
+    .test-item {
+      display: flex;
+      align-items: flex-start;
+      gap: 10px;
+      padding: 9px 10px;
+      border-radius: 9px;
+      background: #f9fafb;
+      border: 1px solid rgba(148, 163, 184, 0.6);
+      transition: background 0.15s ease, border-color 0.15s ease, transform 0.08s ease;
+      cursor: pointer;
+    }
+
+    .test-item:hover {
+      background: #eff6ff;
+      border-color: #2563eb;
+    }
+
+    .test-item.selected {
+      background: #e0ecff;
+      border-color: #2563eb;
+      transform: translateY(-1px);
+    }
+
+    .test-item .checkbox {
+      margin-top: 4px;
+      flex-shrink: 0;
+      width: 18px;
+      height: 18px;
+      accent-color: #2563eb;
+      cursor: pointer;
+    }
+
+    .test-content-child {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      gap: 2px;
+    }
+
+    .test-name {
+      font-weight: 600;
+      font-size: 14px;
+      color: #111827;
+    }
+
+    .test-applicability {
+      font-size: 11px;
+      color: #6b7280;
+      line-height: 1.3;
+    }
+
+    .extra-inputs {
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+      margin-top: 4px;
+    }
+
+    .extra-inputs label {
+      font-size: 11px;
+      display: flex;
+      align-items: center;
+      gap: 4px;
+      color: #4b5563;
+    }
+
+    .extra-input {
+      padding: 3px 5px;
+      border-radius: 6px;
+      border: 1px solid #d1d5db;
+      width: 64px;
+      font-size: 11px;
+    }
+
+    /* Loader */
+    .loader {
+      width: 40px;
+      height: 40px;
+      border: 4px solid #e5e7eb;
+      border-top-color: #2563eb;
+      border-radius: 50%;
+      animation: spin 1s linear infinite;
+      margin: 18px auto 8px;
+      display: none;
+    }
+
+    @keyframes spin { 100% { transform: rotate(360deg); } }
+
+    #noTests {
+      display: none;
+      text-align: center;
+      color: #b91c1c;
+      background-color: #fee2e2;
+      border: 1px solid #fecaca;
+      padding: 14px 16px;
+      border-radius: 12px;
+      font-weight: 600;
+      font-size: 13px;
+      line-height: 1.4;
+      box-shadow: 0 4px 12px rgba(185, 28, 28, 0.12);
+      animation: fadeIn 0.3s ease-in-out;
+    }
+
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(-6px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+
+    /* Right panel / quote */
+    .right-heading {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 12px;
+    }
+
+    .right-heading h3 {
+      font-size: 16px;
+      font-weight: 700;
+      color: #1d4ed8;
+    }
+
+    .right-heading span {
+      font-size: 11px;
+      color: #fcfdff;
+    }
+
+    .price-item {
+      background: #eef5ff;
+      border-radius: 9px;
+      padding: 9px 11px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      font-weight: 500;
+      font-size: 13px;
+      margin-bottom: 5px;
+      transition: background 0.16s ease, transform 0.08s ease;
+    }
+
+    .price-item:hover {
+      background: #dbeafe;
+      transform: translateY(-1px);
+    }
+
+    .price-total {
+      font-size: 17px;
+      font-weight: 700;
+      margin-top: 10px;
+      text-align: right;
+      color: #0b5bd8;
+      padding: 10px 0 4px;
+      border-top: 1px solid #cbd5e1;
+    }
+
+    #quoteBox em {
+      font-style: normal;
+      color: #9ca3af;
+      text-align: center;
+      font-weight: 500;
+      font-size: 13px;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 60px;
+    }
+
+    .continue-btn,
+    #generatePDF {
+      padding: 11px;
+      width: 100%;
+      border-radius: 999px;
+      border: none;
+      cursor: pointer;
+      font-weight: 700;
+      background: #0b5bd8;
+      color: white;
+      margin-top: 10px;
+      transition: background 0.18s ease, box-shadow 0.18s ease, transform 0.08s ease;
+      font-size: 13px;
+    }
+
+    .continue-btn:hover:not(:disabled),
+    #generatePDF:hover {
+      background: #1d4ed8;
+      box-shadow: 0 10px 22px rgba(37, 99, 235, 0.35);
+      transform: translateY(-1px);
+    }
+
+    .continue-btn:disabled {
+      background: #9bbbef;
+      cursor: not-allowed;
+      box-shadow: none;
+      transform: none;
+    }
+
+    .muted {
+      color: #6b7280;
+      font-size: 13px;
+      text-align: center;
+      margin-top: 8px;
+    }
+
+    .error {
+      color: #b91c1c;
+      font-weight: 700;
+      font-size: 13px;
+    }
+
+    /* Responsive */
+    @media (max-width: 1100px) {
+      .app {
+        grid-template-columns: 140px 1fr;
+        grid-template-rows: auto auto;
+      }
+      .panel:last-child {
+        grid-column: 1 / -1;
+      }
+    }
+
+    @media (max-width: 768px) {
+      body { padding: 14px; }
+      .app-header { flex-direction: column; align-items: flex-start; }
+      .app {
+        grid-template-columns: 1fr;
+      }
+      .panel {
+        min-height: auto;
+      }
+      .sheet-pill {
+        font-size: 12px;
+      }
+    }
+  </style>
+</head>
+<body>
+<div class="app-shell">
+
+  <header class="app-header">
+   
+  </header>
+
+  <main class="app">
+
+    <!-- Sidebar -->
+    <section class="panel sidebar">
+      <div>
+        <div class="logo-wrap">
+          <img src="/flux-transparent.png" alt="logo">
+        </div>
+        
+      </div>
+
+      <button id="uploadTrigger" class="upload-btn">Upload datasheet (PDF)</button>
+      <input id="pdfUpload" type="file" accept="application/pdf" style="display:none">
+
+      <div class="sidebar-footer">
+       
+      </div>
+    </section>
+
+    <!-- Middle Panel -->
+    <section class="panel">
+      <div class="sheet-pill" id="fileNameLabel">No file selected</div>
+      <div class="detected-box">
+        <div class="tag" style="display:none;">Detected Compliance Tests</div>
+        <div id="loader" class="loader"></div>
+        <div id="noTests">
+          No tests found. The file may be empty of tests or AI failed to parse it.<br>
+          Please retry by uploading the file again.
+        </div>
+        <div id="testList"></div>
+        <button class="continue-btn" id="calculateBtn" disabled>Calculate price</button>
+      </div>
+    </section>
+
+    <!-- Right Panel -->
+    <section class="panel">
+      <div class="right-heading">
+        <h3>Final quotation</h3>
+        <span class="live" style="display: inline-flex;">Live preview</span>
+        
+      </div>
+      <div id="priceLoader" class="loader"></div>
+      <div id="quoteBox">
+        <em>Prices will load once tests are selected…</em>
+      </div>
+      <button id="generatePDF" style="display:none;">Download PDF</button>
+      <p class="muted">Quotation values are generated by your n8n pricing workflow.</p>
+    </section>
+
+  </main>
+</div>
+
+<!-- Libraries -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+
+<script>
+  let selectedTests = [];
+  let fullTestData = [];
+
+  document.addEventListener("DOMContentLoaded", () => {
+    const fileInput = document.getElementById("pdfUpload");
+    const uploadBtn = document.getElementById("uploadTrigger");
+
+    uploadBtn.addEventListener("click", () => fileInput.click());
+
+    fileInput.addEventListener("change", async () => {
+      if (!fileInput.files.length) return;
+      const file = fileInput.files[0];
+      document.getElementById("fileNameLabel").textContent = file.name;
+
+      resetTestPanel();
+      await uploadFile(file);
+      fileInput.value = "";
+    });
+
+    document.getElementById("calculateBtn").addEventListener("click", calculatePricing);
+    document.getElementById("generatePDF").addEventListener("click", generatePDF);
+  });
+
+  function resetTestPanel() {
+    selectedTests = [];
+    fullTestData = [];
+
+    document.getElementById("testList").innerHTML = "";
+    document.getElementById("loader").style.display = "block";
+    document.getElementById("noTests").style.display = "none";
+
+    const tag = document.querySelector(".tag");
+    if (tag) tag.style.display = "none";
+
+    document.getElementById("calculateBtn").disabled = true;
+    document.getElementById("quoteBox").innerHTML =
+      `<em>Prices will load once tests are selected…</em>`;
+    document.getElementById("generatePDF").style.display = "none";
+  }
+
+  async function uploadFile(file) {
+    const uploadBtn = document.getElementById("uploadTrigger");
+    uploadBtn.disabled = true;
+
+    // ---- DEMO: use your new flat JSON format locally ----
+    const flatJSON = [
+      {"standard":"EN 55032","applicable_test":"RE 30MHz - 1 GHz","applicability_criteria":"yes"},
+      {"standard":"EN 55032","applicable_test":"RE 1 - 6 GHz","applicability_criteria":"Clock frequency > 108 MHz"},
+      {"standard":"EN 55032","applicable_test":"CE AC","applicability_criteria":"yes"},
+      {"standard":"EN 55032","applicable_test":"CE Signal","applicability_criteria":"wired networks, fiber optics with metallic shield, RF receiver tuner connections, antenna connections"},
+      {"standard":"EN 55032","applicable_test":"Harmonics","applicability_criteria":"yes"},
+      {"standard":"EN 55032","applicable_test":"Flicker","applicability_criteria":"yes"},
+      {"standard":"EN 55032","applicable_test":"ESD","applicability_criteria":"yes"},
+      {"standard":"EN 55032","applicable_test":"RI (80 MHz - 1 GHz) - 4 Seiten","applicability_criteria":"yes"},
+      {"standard":"EN 55032","applicable_test":"ITE Spots","applicability_criteria":"yes"},
+      {"standard":"EN 55032","applicable_test":"Burst AC 1-phasig","applicability_criteria":"yes"},
+      {"standard":"EN 55032","applicable_test":"Surge AC 1-phasig","applicability_criteria":"yes"},
+      {"standard":"EN 55032","applicable_test":"CI AC 1-phasig","applicability_criteria":"yes"},
+      {"standard":"EN 55032","applicable_test":"Dips and Drops 1-phasig","applicability_criteria":"yes"},
+      {"standard":"EN 55032","applicable_test":"3-phasig (Burst, Surge, CI, Dips and Drops)","applicability_criteria":"yes"},
+      {"standard":"EN 55032","applicable_test":"Burst DC","applicability_criteria":"Cable > 3m"},
+      {"standard":"EN 55032","applicable_test":"Surge DC","applicability_criteria":"Connection outdoors"},
+      {"standard":"EN 55032","applicable_test":"CI DC","applicability_criteria":"Cable > 3m"},
+      {"standard":"EN 55032","applicable_test":"Burst Signal","applicability_criteria":"Cable > 3m"},
+      {"standard":"EN 55032","applicable_test":"Surge Signal","applicability_criteria":"Anschluss ins Freie plus Antennenanschluss etc"},
+      {"standard":"EN 55032","applicable_test":"CI Signal","applicability_criteria":"Cable > 3m"},
+      {"standard":"EN 55035","applicable_test":"RE 30MHz - 1 GHz","applicability_criteria":"yes"},
+      {"standard":"EN 55035","applicable_test":"RE 1 - 6 GHz","applicability_criteria":"Clock frequency > 108 MHz"},
+      {"standard":"EN 55035","applicable_test":"CE AC","applicability_criteria":"yes"},
+      {"standard":"EN 55035","applicable_test":"CE Signal","applicability_criteria":"wired networks, fiber optics with metallic shield, RF receiver tuner connections, antenna connections"},
+      {"standard":"EN 55035","applicable_test":"Harmonics","applicability_criteria":"yes"},
+      {"standard":"EN 55035","applicable_test":"Flicker","applicability_criteria":"yes"},
+      {"standard":"EN 55035","applicable_test":"ESD","applicability_criteria":"yes"},
+      {"standard":"EN 55035","applicable_test":"RI (80 MHz - 1 GHz) - 4 Seiten","applicability_criteria":"yes"},
+      {"standard":"EN 55035","applicable_test":"ITE Spots","applicability_criteria":"yes"},
+      {"standard":"EN 55035","applicable_test":"Burst AC 1-phasig","applicability_criteria":"yes"},
+      {"standard":"EN 55035","applicable_test":"Surge AC 1-phasig","applicability_criteria":"yes"},
+      {"standard":"EN 55035","applicable_test":"CI AC 1-phasig","applicability_criteria":"yes"},
+      {"standard":"EN 55035","applicable_test":"Dips and Drops 1-phasig","applicability_criteria":"yes"},
+      {"standard":"EN 55035","applicable_test":"3-phasig (Burst, Surge, CI, Dips and Drops)","applicability_criteria":"yes"},
+      {"standard":"EN 55035","applicable_test":"Burst DC","applicability_criteria":"Cable > 3m"},
+      {"standard":"EN 55035","applicable_test":"Surge DC","applicability_criteria":"Connection outdoors"},
+      {"standard":"EN 55035","applicable_test":"CI DC","applicability_criteria":"Cable > 3m"},
+      {"standard":"EN 55035","applicable_test":"Burst Signal","applicability_criteria":"Cable > 3m"},
+      {"standard":"EN 55035","applicable_test":"Surge Signal","applicability_criteria":"Anschluss ins Freie plus Antennenanschluss etc"},
+      {"standard":"EN 55035","applicable_test":"CI Signal","applicability_criteria":"Cable > 3m"},
+      {"standard":"EN 61000-6-3","applicable_test":"RE 30MHz - 1 GHz","applicability_criteria":"yes"},
+      {"standard":"EN 61000-6-3","applicable_test":"RE 1 - 6 GHz","applicability_criteria":"Clock frequency > 108 MHz"},
+      {"standard":"EN 61000-6-3","applicable_test":"CE AC","applicability_criteria":"yes"},
+      {"standard":"EN 61000-6-3","applicable_test":"CE DC","applicability_criteria":"yes"},
+      {"standard":"EN 61000-6-3","applicable_test":"CE Signal","applicability_criteria":"leitungsgebundene Netze, LWL mit metall. Schirm, RF-Empfänger Tuneranschlüsse, Antennenanschlüsse"},
+      {"standard":"EN 61000-6-3","applicable_test":"Clicks","applicability_criteria":"during switching operations"},
+      {"standard":"EN 61000-6-3","applicable_test":"Harmonics","applicability_criteria":"yes"},
+      {"standard":"EN 61000-6-3","applicable_test":"Flicker","applicability_criteria":"yes"},
+      {"standard":"FCC p. 15 + ICES-003","applicable_test":"RE 30MHz - 1 GHz","applicability_criteria":"yes"},
+      {"standard":"FCC p. 15 + ICES-003","applicable_test":"RE FCC 1 - 6 GHz","applicability_criteria":"Clock frequency > 108 MHz"},
+      {"standard":"FCC p. 15 + ICES-003","applicable_test":"RE FCC  1 - 18 GHz","applicability_criteria":"Clock frequency up to 3.6 GHz"},
+      {"standard":"FCC p. 15 + ICES-003","applicable_test":"CE AC","applicability_criteria":"yes"},
+      {"standard":"FCC p. 15 + ICES-003","applicable_test":"CE DC","applicability_criteria":"yes (with power supply)"}
+    ];
+
+    try {
+      document.getElementById("loader").style.display = "block";
+
+      // Simulate API round-trip
+      await new Promise(resolve => setTimeout(resolve, 400));
+
+      // Group flat JSON by standard into the structure renderTests expects
+      const grouped = {};
+      flatJSON.forEach(row => {
+        if (!grouped[row.standard]) {
+          grouped[row.standard] = {
+            Standard: row.standard,
+            StandardDescription: `Applicable EMC tests for ${row.standard}.`,
+            ApplicableTests: []
+          };
+        }
+        grouped[row.standard].ApplicableTests.push({
+          Name: row.applicable_test,
+          Applicability: row.applicability_criteria
+        });
+      });
+
+      fullTestData = Object.values(grouped);
+      renderTests(fullTestData);
+    } catch (err) {
+      console.error(err);
+      document.getElementById("noTests").style.display = "block";
+    } finally {
+      uploadBtn.disabled = false;
+      document.getElementById("loader").style.display = "none";
+    }
+  }
+
+  function renderTests(standards) {
+    const container = document.getElementById("testList");
+    const tag = document.querySelector(".tag");
+    const loader = document.getElementById("loader");
+    const noTests = document.getElementById("noTests");
+
+    loader.style.display = "none";
+    container.innerHTML = "";
+
+    if (!standards.length) {
+      noTests.style.display = "block";
+      tag.style.display = "none";
+      return;
+    }
+
+    tag.style.display = "inline-flex";
+
+    standards.forEach((standard, standardIndex) => {
+      const card = document.createElement("div");
+      card.className = "standard-card";
+      card.setAttribute("data-standard-name", standard.Standard);
+      card.id = `standard-${standardIndex}`;
+
+      const header = document.createElement("div");
+      header.className = "standard-header";
+      header.innerHTML = `
+        <div class="standard-title-group">
+          <div class="standard-title">
+            ${standard.Standard}
+          </div>
+          <div class="standard-description">${standard.StandardDescription}</div>
+        </div>
+        <span class="toggle-icon">▶</span>
+      `;
+
+      const content = document.createElement("div");
+      content.className = "applicable-tests";
+      const testList = document.createElement("div");
+      testList.className = "test-item-list";
+      content.appendChild(testList);
+
+      standard.ApplicableTests.forEach((test) => {
+        const testItem = document.createElement("div");
+        testItem.className = "test-item";
+        testItem.setAttribute("data-test-name", test.Name);
+
+        const fullId = `${standard.Standard}-${test.Name.replace(/\s/g, "_")}`;
+        testItem.setAttribute("data-full-id", fullId);
+
+        let extraFieldsHTML = "";
+        if (test.Name.includes("RI")) {
+          extraFieldsHTML += `
+            <div class="extra-inputs">
+              <label>Units:
+                <input type="number" min="1" class="extra-input" data-field="units">
+              </label>
+            </div>`;
+        }
+
+        testItem.innerHTML = `
+          <input type="checkbox" class="checkbox" id="${fullId}">
+          <div class="test-content-child">
+            <div class="test-name">${test.Name}</div>
+            <div class="test-applicability"><strong>Applicability:</strong> ${test.Applicability}</div>
+            ${extraFieldsHTML}
+          </div>
+        `;
+
+        const checkbox = testItem.querySelector(".checkbox");
+        checkbox.addEventListener("change", () => {
+          testItem.classList.toggle("selected", checkbox.checked);
+          updateSelectedTests();
+        });
+
+        testItem.querySelectorAll(".extra-input").forEach(input => {
+          input.addEventListener("input", updateSelectedTests);
+        });
+
+        testItem.addEventListener("click", e => {
+          if (e.target.tagName !== "INPUT") {
+            checkbox.checked = !checkbox.checked;
+            checkbox.dispatchEvent(new Event("change"));
+          }
+        });
+
+        testList.appendChild(testItem);
+      });
+
+      header.addEventListener("click", () => {
+        card.classList.toggle("expanded");
+      });
+
+      card.appendChild(header);
+      card.appendChild(content);
+      container.appendChild(card);
+    });
+  }
+
+  function updateSelectedTests() {
+    selectedTests = [];
+
+    document.querySelectorAll(".standard-card").forEach(standardCard => {
+      const standardName = standardCard.getAttribute("data-standard-name");
+
+      standardCard.querySelectorAll(".test-item").forEach(testItem => {
+        const checkbox = testItem.querySelector(".checkbox");
+        if (checkbox && checkbox.checked) {
+          const testName = testItem.getAttribute("data-test-name");
+
+          const obj = {
+            test_code: `${standardName} - ${testName}`,
+            standard: standardName,
+            applicable_test: testName
+          };
+
+          testItem.querySelectorAll(".extra-input").forEach(input => {
+            const val = input.value.trim();
+            if (val) obj[input.dataset.field] = Number(val);
+          });
+
+          selectedTests.push(obj);
+        }
+      });
+    });
+
+    document.getElementById("calculateBtn").disabled = selectedTests.length === 0;
+    console.log("Selected Tests for Backend:", selectedTests);
+  }
+
+  async function calculatePricing() {
+    const priceLoader = document.getElementById("priceLoader");
+    const quoteBox = document.getElementById("quoteBox");
+    const pdfBtn = document.getElementById("generatePDF");
+
+    quoteBox.innerHTML = "";
+    pdfBtn.style.display = "none";
+    priceLoader.style.display = "block";
+
+    const payload = { selected: selectedTests };
+    console.log("Pricing payload:", JSON.stringify(payload));
+
+    try {
+      const res = await fetch(
+        "https://n8n.kashinath.net/webhook/calculate-prices",
+        {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(payload),
+          mode: "cors"
+        }
+      );
+
+      const text = await res.text();
+      let json;
+      try { json = JSON.parse(text); } catch { json = null; }
+
+      priceLoader.style.display = "none";
+
+      if (!res.ok) {
+        quoteBox.innerHTML =
+          `<p class="error">⚠ Error calculating pricing: ${json?.message || text || `HTTP ${res.status}`}</p>`;
+        return;
+      }
+
+      const results = json?.[0]?.pricing_results ?? json?.pricing_results ?? json;
+      if (!results || !results.length) {
+        quoteBox.innerHTML =
+          `<p class="muted">No pricing results returned from server.</p>`;
+        pdfBtn.style.display = "none";
+        return;
+      }
+
+      renderPricing(results);
+      pdfBtn.style.display = "block";
+    } catch (err) {
+      console.error(err);
+      priceLoader.style.display = "none";
+      quoteBox.innerHTML =
+        `<p class="error">⚠ Network or unexpected error: ${err.message || String(err)}</p>`;
+    }
+  }
+
+  function renderPricing(results) {
+    let html = "";
+    let total = 0;
+
+    results.forEach(item => {
+      const name = item.test_name ?? item.name ?? item.test_code ?? "Unnamed test";
+      const price = Number(item.total_price ?? item.price ?? 0);
+      html += `<div class="price-item"><strong>${name}</strong><span>Rs ${price}</span></div>`;
+      total += price;
+    });
+
+    html += `<div class="price-total">Grand Total: Rs ${total}</div>`;
+    document.getElementById("quoteBox").innerHTML = html;
+  }
+
+  async function generatePDF() {
+    const { jsPDF } = window.jspdf;
+    const doc = new jsPDF({ unit: "pt", format: "a4" });
+    const pageWidth = doc.internal.pageSize.getWidth();
+    const pageHeight = doc.internal.pageSize.getHeight();
+    const marginX = 40;
+
+    const rows = [];
+    document.querySelectorAll(".price-item").forEach(item => {
+      const text = item.textContent.trim();
+      const parts = text.split("Rs");
+      const description = parts[0].trim().replace(/[-–—]\s*$/, "");
+      const unitPrice = parseFloat((parts[1] || "0").replace(/[^\d.]/g, "")) || 0;
+      rows.push({ qty: 1, description, unitPrice, lineTotal: unitPrice });
+    });
+
+    const grandTotal = rows.reduce((sum, r) => sum + r.lineTotal, 0);
+
+    let y = 40;
+    const logoImg = document.querySelector(".logo-wrap img");
+    if (logoImg && logoImg.src) {
+      try { doc.addImage(logoImg, "PNG", marginX, y, 70, 70); } catch (e) { console.warn("Logo skipped"); }
+    }
+
+    const lineY = y + 80;
+    doc.setFont("helvetica", "bold");
+    doc.setFontSize(20);
+    doc.text("QUOTATION", pageWidth / 2, lineY - 5, { align: "center" });
+
+    const today = new Date();
+    const dateStr = today.toLocaleDateString("en-GB");
+    const quoteNumber = "Q-" + today.getFullYear().toString().slice(-2) + "0001";
+    const validText = "Valid Until: 14 days";
+
+    doc.setFont("helvetica", "normal");
+    doc.setFontSize(10);
+    const headerX = pageWidth - marginX - 180;
+    doc.text(`Date: ${dateStr}`, headerX, y + 10);
+    doc.text(`Quote #: ${quoteNumber}`, headerX, y + 25);
+    doc.text(validText, headerX, y + 40);
+
+    doc.setLineWidth(0.7);
+    doc.line(marginX, lineY, pageWidth - marginX, lineY);
+    y = lineY + 20;
+
+    doc.setFont("helvetica", "bold");
+    doc.setFontSize(11);
+    doc.text("From:", marginX, y);
+    doc.setFont("helvetica", "normal");
+
+    const fromName = "Quotation AI";
+    const fromAddress = "#2, 7th Cross, Bangalore";
+
+    y += 14;
+    doc.text(fromName, marginX, y);
+    doc.text(fromAddress, marginX, y + 12);
+
+    const tableX = marginX;
+    const tableWidth = pageWidth - marginX * 2;
+    const colQtyWidth = 40;
+    const colDescWidth = tableWidth - colQtyWidth - 140;
+    const colUnitWidth = 70;
+
+    function drawTableHeader(yPos) {
+      doc.setFillColor(210, 230, 225);
+      doc.rect(tableX, yPos, tableWidth, 22, "F");
+
+      doc.setFont("helvetica", "bold");
+      doc.setFontSize(11);
+      const headerY = yPos + 15;
+      doc.text("Qty", tableX + 10, headerY);
+      doc.text("Description", tableX + colQtyWidth + 10, headerY);
+      doc.text("Unit Price", tableX + colQtyWidth + colDescWidth + 5, headerY, { align: "right" });
+      doc.text("Line Total", tableX + colQtyWidth + colDescWidth + colUnitWidth + 5, headerY, { align: "right" });
+      return yPos + 26;
+    }
+
+    y += 40;
+    y = drawTableHeader(y);
+
+    rows.forEach((row, i) => {
+      if (y + 30 > pageHeight - 40) {
+        doc.addPage();
+        y = 40;
+        y = drawTableHeader(y);
+      }
+
+      doc.setFillColor(i % 2 === 0 ? 246 : 255, 246, 246);
+      doc.rect(tableX, y, tableWidth, 22, "F");
+
+      const rowY = y + 15;
+      doc.setFont("helvetica", "normal");
+      doc.setFontSize(10);
+      doc.text(String(row.qty), tableX + 10, rowY);
+      doc.text(row.description, tableX + colQtyWidth + 10, rowY);
+      doc.text(`Rs ${row.unitPrice}`, tableX + colQtyWidth + colDescWidth + 5, rowY, { align: "right" });
+      doc.text(`Rs ${row.lineTotal}`, tableX + colQtyWidth + colDescWidth + colUnitWidth + 5, rowY, { align: "right" });
+
+      y += 26;
+    });
+
+    y += 10;
+    doc.setFont("helvetica", "bold");
+    doc.setFontSize(11);
+    doc.setLineWidth(0.5);
+    doc.line(tableX + colQtyWidth + colDescWidth + colUnitWidth, y - 12, tableX + tableWidth, y - 12);
+    doc.text("Grand Total:", tableX + colQtyWidth + colDescWidth + colUnitWidth + 5, y, { align: "right" });
+    doc.text(`Rs ${grandTotal}`, tableX + tableWidth, y, { align: "right" });
+
+    doc.save("Quotation.pdf");
+  }
+</script>
+</body>
+</html>

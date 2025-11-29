@@ -313,15 +313,21 @@
 
     .applicable-tests {
       max-height: 0;
-      overflow: hidden;
-      transition: max-height 0.35s ease;
-      padding: 0 14px;
-      background: #ffffff;
+    overflow: hidden;
+    transition: max-height 0.35s ease;
+    padding: 0 14px;
+    background: #ffffff;
     }
 
     .standard-card.expanded .applicable-tests {
-      max-height: 1000px;
-      padding-bottom: 12px;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      padding-top: 10px;
+
+      /* NEW: internal scroll when there are many tests */
+      max-height: 280px;        /* slightly less than .applicable-tests */
+      overflow-y: auto;
     }
 
     .test-item-list {

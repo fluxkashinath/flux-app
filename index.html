@@ -700,6 +700,10 @@
         "https://n8n.kashinath.net/webhook/emc-tests-from-datasheet",
         {
           method: "POST",
+          headers: {
+          "x-flux-auth": "mkdMR7Euq18d",
+          "Content-Type": "application/json"
+          },
           body: formData
         }
       );

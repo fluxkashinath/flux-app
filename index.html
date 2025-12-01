@@ -683,53 +683,55 @@
   }
 
   async function uploadFile(file) {
-    const uploadBtn = document.getElementById("uploadTrigger");
-    const loader = document.getElementById("loader");
-    const noTests = document.getElementById("noTests");
+  const uploadBtn = document.getElementById("uploadTrigger");
+  const loader = document.getElementById("loader");
+  const noTests = document.getElementById("noTests");
 
-    uploadBtn.disabled = true;
-    loader.style.display = "block";
-    noTests.style.display = "none";
+  uploadBtn.disabled = true;
+  loader.style.display = "block";
+  noTests.style.display = "none";
 
-    try {
-      const formData = new FormData();
-      // Field name must match the Webhook binary field in n8n ("file")
-      formData.append("file", file);
+  try {
+    const formData = new FormData();
+    formData.append("file", file);
 
-      const res = await fetch(
-        "https://n8n.kashinath.net/webhook/emc-tests-from-datasheet",
-        {
-          method: "POST",
-          headers: {
-          "x-flux-auth": "mkdMR7Euq18d",
-          "Content-Type": "application/json"
-          },
-          body: formData
-        }
-      );
-
-      if (!res.ok) {
-        const text = await res.text();
-        console.error("n8n error:", text);
-        noTests.style.display = "block";
-        loader.style.display = "none";
-        uploadBtn.disabled = false;
-        return;
+    const res = await fetch(
+      "https://n8n.kashinath.net/webhook/emc-tests-from-datasheet",
+      {
+        method: "POST",
+        headers: {
+          "x-flux-auth": "mkdMR7Euq18d"   // no Content-Type here
+        },
+        body: formData
       }
+    );
 
-      const testsJson = await res.json();
-
-      // Expect: array of { Standard, StandardDescription, TestItem, ApplicableTests: [...] }
-      fullTestData = Array.isArray(testsJson) ? testsJson : [];
-      renderTests(fullTestData);
-    } catch (err) {
-      console.error(err);
-      noTests.style.display = "block";
-    } finally {
-      loader.style.display = "none";
-      uploadBtn.disabled = false;
+    const text = await res.text();
+    let testsJson = null;
+    try { testsJson = JSON.parse(text); } catch (e) {
+      console.error("JSON parse error:", e, text);
     }
+
+    if (!res.ok || !testsJson) {
+      console.error("n8n error:", text);
+      noTests.style.display = "block";
+      return;
+    }
+
+    // Your latest output is already an array -> group it
+    const grouped = groupByStandard(testsJson);
+    fullTestData = grouped;
+    renderTests(fullTestData);
+
+  } catch (err) {
+    console.error(err);
+    noTests.style.display = "block";
+  } finally {
+    loader.style.display = "none";
+    uploadBtn.disabled = false;
   }
+}
+
 
   function renderTests(standards) {
     const container = document.getElementById("testList");
@@ -757,9 +759,11 @@
       const header = document.createElement("div");
       header.className = "standard-header";
 
-      const testItemText = standard.TestItem
-        ? `<div class="standard-testitem">${standard.TestItem}</div>`
-        : "";
+      const testItemText =
+  standard.ApplicableTests && standard.ApplicableTests.length
+    ? `<div class="standard-testitem">${standard.ApplicableTests.length} tests detected</div>`
+    : "";
+
 
       header.innerHTML = `
         <div class="standard-title-group">
@@ -843,6 +847,35 @@
       container.appendChild(card);
     });
   }
+// Merge all rows with the same Standard into a single card
+function groupByStandard(items) {
+  const map = new Map();
+
+  (items || []).forEach(entry => {
+    const key = entry.Standard || "Unknown standard";
+
+    if (!map.has(key)) {
+      map.set(key, {
+        Standard: entry.Standard || key,
+        StandardDescription: entry.StandardDescription || "",
+        ApplicableTests: []
+      });
+    }
+
+    const group = map.get(key);
+
+    (entry.ApplicableTests || []).forEach(t => {
+      const name = t.Name || entry.TestItem || "";
+      group.ApplicableTests.push({
+        Name: name,
+        Applicability: t.Applicability || "",
+        FullName: t.FullName || `${entry.Standard} -- ${name}`
+      });
+    });
+  });
+
+  return Array.from(map.values());
+}
 
   function updateSelectedTests() {
     selectedTests = [];

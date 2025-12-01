@@ -926,8 +926,7 @@
     doc.setFontSize(10);
     const headerX = pageWidth - marginX - 180;
     doc.text(`Date: ${dateStr}`, headerX, y + 10);
-    doc.text(`Quote #: ${quoteNumber}`, headerX, y + 25);
-    doc.text(validText, headerX, y + 40);
+  
 
     doc.setLineWidth(0.7);
     doc.line(marginX, lineY, pageWidth - marginX, lineY);

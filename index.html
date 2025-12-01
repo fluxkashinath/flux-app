@@ -22,8 +22,8 @@
       background: radial-gradient(circle at top left, #e0f2ff 0, #f4f7f9 40%, #eef2f7 100%);
       color: #222;
       padding: 20px;
-      min-height: 100vh;  /* page can grow but at least viewport height */
-      overflow: auto;     /* restore normal scroll for responsiveness */
+      min-height: 100vh;
+      overflow: auto;
     }
 
     .app-shell {
@@ -49,7 +49,7 @@
       display: grid;
       grid-template-columns: 150px 1.35fr 0.95fr;
       gap: 18px;
-      min-height: 0; /* so inner flex children can scroll */
+      min-height: 0;
     }
 
     .panel {
@@ -323,26 +323,27 @@
       font-size: 11px;
     }
 
-    /* Bigger centered loader */
-    .loader {
-      width: 70px;
-      height: 70px;
-      border: 6px solid #e5e7eb;
-      border-top-color: #2563eb;
-      border-radius: 50%;
-      animation: spin 1s linear infinite;
-      margin: auto;
-      display: none;
+    /* Responsive centered loader overlay */
+    .loader-overlay {
       position: absolute;
-      top: 50%;
-      left: 50%;
-      transform: translate(-50%, -50%);
+      inset: 0;
+      display: none;
+      align-items: center;
+      justify-content: center;
       z-index: 2;
-      background: transparent;
+    }
+
+    .loader-circle {
+      width: clamp(40px, 7vw, 70px);
+      height: clamp(40px, 7vw, 70px);
+      border-radius: 50%;
+      border: clamp(4px, 0.8vw, 6px) solid #e5e7eb;
+      border-top-color: #2563eb;
+      animation: spin 1s linear infinite;
     }
 
     @keyframes spin {
-      100% { transform: translate(-50%, -50%) rotate(360deg); }
+      to { transform: rotate(360deg); }
     }
 
     #noTests {
@@ -389,8 +390,7 @@
       border-radius: 9px;
       padding: 9px 11px;
       display: flex;
-      justify-content: space-between;
-      align-items: center;
+      flex-direction: column;
       font-weight: 500;
       font-size: 13px;
       margin-bottom: 5px;
@@ -400,6 +400,26 @@
     .price-item:hover {
       background: #dbeafe;
       transform: translateY(-1px);
+    }
+
+    .price-name {
+      font-weight: 600;
+      color: #111827;
+      margin-bottom: 4px;
+    }
+
+    .price-meta {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      font-size: 12px;
+      color: #374151;
+      justify-content: space-between;
+    }
+
+    .price-total-line {
+      margin-left: auto;
+      font-weight: 600;
     }
 
     .price-total {
@@ -424,7 +444,6 @@
       height: 60px;
     }
 
-    .continue-btn,
     #generatePDF {
       padding: 11px;
       width: 100%;
@@ -437,20 +456,13 @@
       margin-top: 10px;
       transition: background 0.18s ease, box-shadow 0.18s ease, transform 0.08s ease;
       font-size: 13px;
+      display: none;
     }
 
-    .continue-btn:hover:not(:disabled),
     #generatePDF:hover {
       background: #1d4ed8;
       box-shadow: 0 10px 22px rgba(37, 99, 235, 0.35);
       transform: translateY(-1px);
-    }
-
-    .continue-btn:disabled {
-      background: #9bbbef;
-      cursor: not-allowed;
-      box-shadow: none;
-      transform: none;
     }
 
     .muted {
@@ -530,7 +542,11 @@
         </div>
 
         <div class="tag" style="display:none;">Detected Compliance Tests</div>
-        <div id="loader" class="loader"></div>
+
+        <!-- centered overlay loader -->
+        <div id="loader" class="loader-overlay">
+          <div class="loader-circle"></div>
+        </div>
 
         <div id="noTests">
           No tests found. The file may be empty of tests or AI failed to parse it.<br>
@@ -538,7 +554,6 @@
         </div>
 
         <div id="testList"></div>
-        <button class="continue-btn" id="calculateBtn" disabled>Calculate price</button>
       </div>
     </section>
 
@@ -548,11 +563,10 @@
         <h3>Final quotation</h3>
         <span class="live" style="display: inline-flex;">Live preview</span>
       </div>
-      <div id="priceLoader" class="loader"></div>
       <div id="quoteBox">
         <em>Prices will load once tests are selected…</em>
       </div>
-      <button id="generatePDF" style="display:none;">Download PDF</button>
+      <button id="generatePDF">Download PDF</button>
     </section>
 
   </main>
@@ -581,7 +595,6 @@
       fileInput.value = "";
     });
 
-    document.getElementById("calculateBtn").addEventListener("click", calculatePricing);
     document.getElementById("generatePDF").addEventListener("click", generatePDF);
   });
 
@@ -599,7 +612,6 @@
     const tag = document.querySelector(".tag");
     if (tag) tag.style.display = "none";
 
-    document.getElementById("calculateBtn").disabled = true;
     document.getElementById("quoteBox").innerHTML =
       `<em>Prices will load once tests are selected…</em>`;
     document.getElementById("generatePDF").style.display = "none";
@@ -611,7 +623,7 @@
     const noTests = document.getElementById("noTests");
 
     uploadBtn.disabled = true;
-    loader.style.display = "block";
+    loader.style.display = "flex";
     noTests.style.display = "none";
 
     try {
@@ -770,95 +782,93 @@
       }
     });
 
-    document.getElementById("calculateBtn").disabled = selectedTests.length === 0;
-    console.log("Selected Tests for Backend:", selectedTests);
+    renderLiveQuoteFromSelection();
   }
 
-  async function calculatePricing() {
-    const priceLoader = document.getElementById("priceLoader");
+  // Live quote based only on selectedTests (hours * price_euros)
+  function renderLiveQuoteFromSelection() {
     const quoteBox = document.getElementById("quoteBox");
     const pdfBtn = document.getElementById("generatePDF");
 
-    quoteBox.innerHTML = "";
-    pdfBtn.style.display = "none";
-    priceLoader.style.display = "block";
-
-    const payload = { selected: selectedTests };
-    console.log("Pricing payload:", JSON.stringify(payload));
-
-    try {
-      const res = await fetch(
-        "https://n8n.kashinath.net/webhook/calculate-prices",
-        {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify(payload),
-          mode: "cors"
-        }
-      );
-
-      const text = await res.text();
-      let json;
-      try { json = JSON.parse(text); } catch { json = null; }
-
-      priceLoader.style.display = "none";
-
-      if (!res.ok) {
-        quoteBox.innerHTML =
-          `<p class="error">⚠ Error calculating pricing: ${json?.message || text || `HTTP ${res.status}`}</p>`;
-        return;
-      }
-
-      const results = json?.[0]?.pricing_results ?? json?.pricing_results ?? json;
-      if (!results || !results.length) {
-        quoteBox.innerHTML =
-          `<p class="muted">No pricing results returned from server.</p>`;
-        pdfBtn.style.display = "none";
-        return;
-      }
-
-      renderPricing(results);
-      pdfBtn.style.display = "block";
-    } catch (err) {
-      console.error(err);
-      priceLoader.style.display = "none";
-      quoteBox.innerHTML =
-        `<p class="error">⚠ Network or unexpected error: ${err.message || String(err)}</p>`;
+    if (!selectedTests.length) {
+      quoteBox.innerHTML = `<em>Prices will load once tests are selected…</em>`;
+      pdfBtn.style.display = "none";
+      return;
     }
-  }
 
-  function renderPricing(results) {
     let html = "";
-    let total = 0;
+    let grandTotal = 0;
 
-    results.forEach(item => {
-      const name = item.test_name ?? item.name ?? item.test_code ?? "Unnamed test";
-      const price = Number(item.total_price ?? item.price ?? 0);
-      html += `<div class="price-item"><strong>${name}</strong><span>Rs ${price}</span></div>`;
-      total += price;
+    selectedTests.forEach(test => {
+      const name = test.test_name || test.test_code || "Unnamed test";
+      const rawHours = test.hours;
+      const rawRate = test.price_euros;
+
+      const hasHours = typeof rawHours === "number" && !Number.isNaN(rawHours);
+      const hasRate  = typeof rawRate === "number" && !Number.isNaN(rawRate);
+
+      const hoursLabel = hasHours ? rawHours : "n/a";
+      const rateLabel  = hasRate ? `€ ${rawRate}` : "n/a";
+
+      const lineTotal = (hasHours && hasRate) ? rawHours * rawRate : null;
+      const totalLabel = lineTotal !== null ? `€ ${lineTotal.toFixed(2)}` : "n/a";
+
+      if (lineTotal !== null) grandTotal += lineTotal;
+
+      html += `
+        <div class="price-item">
+          <div class="price-name">${name}</div>
+          <div class="price-meta">
+            <span>Hours: <strong>${hoursLabel}</strong></span>
+            <span>Rate: <strong>${rateLabel}</strong></span>
+            <span class="price-total-line">Total: <strong>${totalLabel}</strong></span>
+          </div>
+        </div>
+      `;
     });
 
-    html += `<div class="price-total">Grand Total: Rs ${total}</div>`;
-    document.getElementById("quoteBox").innerHTML = html;
+    html += `<div class="price-total">Grand Total: € ${grandTotal.toFixed(2)}</div>`;
+    quoteBox.innerHTML = html;
+    pdfBtn.style.display = "block";
   }
 
   async function generatePDF() {
+    if (!selectedTests.length) return;
+
     const { jsPDF } = window.jspdf;
     const doc = new jsPDF({ unit: "pt", format: "a4" });
     const pageWidth = doc.internal.pageSize.getWidth();
     const pageHeight = doc.internal.pageSize.getHeight();
     const marginX = 40;
 
+    // Build rows from current selection
     const rows = [];
-    document.querySelectorAll(".price-item").forEach(item => {
-      const text = item.textContent.trim();
-      const parts = text.split("Rs");
-      const description = parts[0].trim().replace(/[-–—]\s*$/, "");
-      const unitPrice = parseFloat((parts[1] || "0").replace(/[^\d.]/g, "")) || 0;
-      rows.push({ qty: 1, description, unitPrice, lineTotal: unitPrice });
-    });
+    let grandTotal = 0;
 
-    const grandTotal = rows.reduce((sum, r) => sum + r.lineTotal, 0);
+    selectedTests.forEach(test => {
+      const name = test.test_name || test.test_code || "Unnamed test";
+      const rawHours = test.hours;
+      const rawRate = test.price_euros;
+
+      const hasHours = typeof rawHours === "number" && !Number.isNaN(rawHours);
+      const hasRate  = typeof rawRate === "number" && !Number.isNaN(rawRate);
+
+      const hoursLabel = hasHours ? String(rawHours) : "n/a";
+      const rateLabel  = hasRate ? `€ ${rawRate}` : "n/a";
+
+      const lineTotal = (hasHours && hasRate) ? rawHours * rawRate : null;
+      const totalLabel = lineTotal !== null ? `€ ${lineTotal.toFixed(2)}` : "n/a";
+
+      if (lineTotal !== null) grandTotal += lineTotal;
+
+      rows.push({
+        testName: name,
+        hoursLabel,
+        rateLabel,
+        totalLabel,
+        numericTotal: lineTotal || 0
+      });
+    });
 
     let y = 40;
     const logoImg = document.querySelector(".logo-wrap img");
@@ -880,8 +890,8 @@
     doc.setFontSize(10);
     const headerX = pageWidth - marginX - 180;
     doc.text(`Date: ${dateStr}`, headerX, y + 10);
-    doc.text(`Quote #: ${quoteNumber}`, headerX, y + 25);
-    doc.text(validText, headerX, y + 40);
+    // doc.text(`Quote #: ${quoteNumber}`, headerX, y + 25);
+    // doc.text(validText, headerX, y + 40);
 
     doc.setLineWidth(0.7);
     doc.line(marginX, lineY, pageWidth - marginX, lineY);
@@ -892,7 +902,7 @@
     doc.text("From:", marginX, y);
     doc.setFont("helvetica", "normal");
 
-    const fromName = "Quotation AI";
+    const fromName = "FLUX";
     const fromAddress = "#2, 7th Cross, Bangalore";
 
     y += 14;
@@ -901,9 +911,9 @@
 
     const tableX = marginX;
     const tableWidth = pageWidth - marginX * 2;
-    const colQtyWidth = 40;
-    const colDescWidth = tableWidth - colQtyWidth - 140;
-    const colUnitWidth = 70;
+    const colHoursWidth = 60;
+    const colRateWidth = 80;
+    const colDescWidth = tableWidth - colHoursWidth - colRateWidth - 80; // 80 for Total column
 
     function drawTableHeader(yPos) {
       doc.setFillColor(210, 230, 225);
@@ -912,10 +922,11 @@
       doc.setFont("helvetica", "bold");
       doc.setFontSize(11);
       const headerY = yPos + 15;
-      doc.text("Qty", tableX + 10, headerY);
-      doc.text("Description", tableX + colQtyWidth + 10, headerY);
-      doc.text("Unit Price", tableX + colQtyWidth + colDescWidth + 5, headerY, { align: "right" });
-      doc.text("Line Total", tableX + colQtyWidth + colDescWidth + colUnitWidth + 5, headerY, { align: "right" });
+      
+      doc.text("Test", tableX + colHoursWidth + 10, headerY);
+      doc.text("Hours", tableX + 10, headerY);
+      doc.text("Rate", tableX + colHoursWidth + colDescWidth + 5, headerY, { align: "right" });
+      doc.text("Total", tableX + colHoursWidth + colDescWidth + colRateWidth + 5, headerY, { align: "right" });
       return yPos + 26;
     }
 
@@ -935,10 +946,11 @@
       const rowY = y + 15;
       doc.setFont("helvetica", "normal");
       doc.setFontSize(10);
-      doc.text(String(row.qty), tableX + 10, rowY);
-      doc.text(row.description, tableX + colQtyWidth + 10, rowY);
-      doc.text(`Rs ${row.unitPrice}`, tableX + colQtyWidth + colDescWidth + 5, rowY, { align: "right" });
-      doc.text(`Rs ${row.lineTotal}`, tableX + colQtyWidth + colDescWidth + colUnitWidth + 5, rowY, { align: "right" });
+     
+      doc.text(row.testName, tableX + colHoursWidth + 10, rowY);
+      doc.text(row.hoursLabel, tableX + 10, rowY);
+      doc.text(row.rateLabel, tableX + colHoursWidth + colDescWidth + 5, rowY, { align: "right" });
+      doc.text(row.totalLabel, tableX + colHoursWidth + colDescWidth + colRateWidth + 5, rowY, { align: "right" });
 
       y += 26;
     });
@@ -947,9 +959,14 @@
     doc.setFont("helvetica", "bold");
     doc.setFontSize(11);
     doc.setLineWidth(0.5);
-    doc.line(tableX + colQtyWidth + colDescWidth + colUnitWidth, y - 12, tableX + tableWidth, y - 12);
-    doc.text("Grand Total:", tableX + colQtyWidth + colDescWidth + colUnitWidth + 5, y, { align: "right" });
-    doc.text(`Rs ${grandTotal}`, tableX + tableWidth, y, { align: "right" });
+    doc.line(
+      tableX + colHoursWidth + colDescWidth + colRateWidth,
+      y - 12,
+      tableX + tableWidth,
+      y - 12
+    );
+    doc.text("Grand Total:", tableX + colHoursWidth + colDescWidth + colRateWidth + 5, y, { align: "right" });
+    doc.text(`€ ${grandTotal.toFixed(2)}`, tableX + tableWidth, y, { align: "right" });
 
     doc.save("Quotation.pdf");
   }

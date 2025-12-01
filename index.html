@@ -93,6 +93,7 @@
       display: grid;
       grid-template-columns: 150px 1.35fr 0.95fr;
       gap: 18px;
+      align-items: stretch;
     }
 
     .panel {
@@ -104,6 +105,11 @@
       flex-direction: column;
       min-height: 420px;
       border: 1px solid rgba(148, 163, 184, 0.18);
+    }
+
+    /* Middle panel: let it grow with content, no fixed height */
+    .panel.middle-panel {
+      /* no fixed height; it will expand up to page height */
     }
 
     /* Sidebar */
@@ -180,6 +186,9 @@
       margin-bottom: 16px;
       color: #0b5bd8;
       font-size: 13px;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
     }
 
     .detected-box {
@@ -191,6 +200,7 @@
       gap: 14px;
       flex: 1;
       border: 1px dashed rgba(148, 163, 184, 0.6);
+      min-height: 0;
     }
 
     .tag {
@@ -237,130 +247,43 @@
       box-shadow: 0 0 0 5px rgba(34, 197, 94, 0.2);
     }
 
+    /* Scroll area for tests */
     #testList {
       flex: 1;
       display: flex;
       flex-direction: column;
-      gap: 12px;
+      gap: 10px;
       overflow-y: auto;
       padding-right: 4px;
       padding-top: 1px;
+      min-height: 0;
     }
 
-    /* Standard cards */
-    .standard-card {
-      border-radius: 12px;
-      background: #ffffff;
-      box-shadow: 0 6px 18px rgba(15, 23, 42, 0.04);
-      overflow: hidden;
-      border: 1px solid rgba(148, 163, 184, 0.45);
-      transition: box-shadow 0.18s ease, border-color 0.18s ease, transform 0.12s ease;
-    }
-
-    .standard-card.expanded {
-      box-shadow: 0 12px 30px rgba(15, 23, 42, 0.08);
-      border-color: #2563eb;
-      transform: translateY(-1px);
-    }
-
-    .standard-header {
-      padding: 13px 16px;
-      background: linear-gradient(135deg, #eff6ff, #e0f2fe);
-      cursor: pointer;
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      transition: background 0.15s ease;
-    }
-
-    .standard-header:hover {
-      background: linear-gradient(135deg, #dbeafe, #bae6fd);
-    }
-
-    .standard-title-group {
-      display: flex;
-      flex-direction: column;
-      gap: 3px;
-      flex: 1;
-      padding-right: 10px;
-    }
-
-    .standard-title {
-      font-weight: 700;
-      font-size: 15px;
-      color: #0b5bd8;
-    }
-
-    .standard-description {
-      font-size: 12px;
-      color: #6b7280;
-    }
-
-    .standard-testitem {
-      font-size: 11px;
-      color: #4b5563;
-      margin-top: 2px;
-    }
-
-    .toggle-icon {
-      font-size: 18px;
-      color: #1d4ed8;
-      transition: transform 0.26s ease;
-    }
-
-    .standard-card.expanded .toggle-icon {
-      transform: rotate(90deg);
-    }
-
-    .applicable-tests {
-      max-height: 0;
-    overflow: hidden;
-    transition: max-height 0.35s ease;
-    padding: 0 14px;
-    background: #ffffff;
-    }
-
-    .standard-card.expanded .applicable-tests {
-      display: flex;
-      flex-direction: column;
-      gap: 8px;
-      padding-top: 10px;
-      padding-bottom: 4px;
-
-
-      /* NEW: internal scroll when there are many tests */
-      max-height: 280px;        /* slightly less than .applicable-tests */
-      overflow-y: auto;
-    }
-
-    .test-item-list {
-      display: flex;
-      flex-direction: column;
-      gap: 8px;
-      padding-top: 10px;
-    }
-
+    /* Single test cards */
     .test-item {
       display: flex;
       align-items: flex-start;
       gap: 10px;
       padding: 9px 10px;
       border-radius: 9px;
-      background: #f9fafb;
+      background: #ffffff;
       border: 1px solid rgba(148, 163, 184, 0.6);
-      transition: background 0.15s ease, border-color 0.15s ease, transform 0.08s ease;
+      box-shadow: 0 4px 10px rgba(15, 23, 42, 0.03);
+      transition: background 0.15s ease, border-color 0.15s ease, transform 0.08s ease, box-shadow 0.12s ease;
       cursor: pointer;
     }
 
     .test-item:hover {
       background: #eff6ff;
       border-color: #2563eb;
+      box-shadow: 0 6px 16px rgba(37, 99, 235, 0.15);
     }
 
     .test-item.selected {
       background: #e0ecff;
       border-color: #2563eb;
       transform: translateY(-1px);
+      box-shadow: 0 8px 20px rgba(37, 99, 235, 0.25);
     }
 
     .test-item .checkbox {
@@ -376,7 +299,7 @@
       flex: 1;
       display: flex;
       flex-direction: column;
-      gap: 2px;
+      gap: 3px;
     }
 
     .test-name {
@@ -387,13 +310,37 @@
 
     .test-code {
       font-size: 11px;
-      color: #6b7280;
+      color: #4b5563;
     }
 
     .test-applicability {
       font-size: 11px;
       color: #6b7280;
       line-height: 1.3;
+    }
+
+    .test-standards {
+      font-size: 10px;
+      color: #6b7280;
+      margin-top: 2px;
+    }
+
+    /* New: hours / price pills */
+    .test-metrics {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 6px;
+      margin-top: 4px;
+      font-size: 11px;
+      color: #374151;
+    }
+
+    .metric-pill {
+      padding: 3px 7px;
+      border-radius: 999px;
+      background: #eff6ff;
+      border: 1px solid #dbeafe;
+      font-weight: 500;
     }
 
     .extra-inputs {
@@ -427,7 +374,7 @@
       border-top-color: #2563eb;
       border-radius: 50%;
       animation: spin 1s linear infinite;
-      margin: 18px auto 8px;
+      margin: 4px auto 4px;
       display: none;
     }
 
@@ -576,6 +523,9 @@
       .panel {
         min-height: auto;
       }
+      .panel.middle-panel {
+        /* still auto-height on mobile */
+      }
       .sheet-pill {
         font-size: 12px;
       }
@@ -586,7 +536,7 @@
 <div class="app-shell">
 
   <header class="app-header">
-    <!-- You can add your brand content here if needed -->
+    <!-- Optional header content -->
   </header>
 
   <main class="app">
@@ -608,7 +558,7 @@
     </section>
 
     <!-- Middle Panel -->
-    <section class="panel">
+    <section class="panel middle-panel">
       <div class="sheet-pill" id="fileNameLabel">No file selected</div>
       <div class="detected-box">
         <div class="tag" style="display:none;">Detected Compliance Tests</div>
@@ -633,7 +583,6 @@
         <em>Prices will load once tests are selected…</em>
       </div>
       <button id="generatePDF" style="display:none;">Download PDF</button>
-      
     </section>
 
   </main>
@@ -684,57 +633,56 @@
   }
 
   async function uploadFile(file) {
-  const uploadBtn = document.getElementById("uploadTrigger");
-  const loader = document.getElementById("loader");
-  const noTests = document.getElementById("noTests");
+    const uploadBtn = document.getElementById("uploadTrigger");
+    const loader = document.getElementById("loader");
+    const noTests = document.getElementById("noTests");
 
-  uploadBtn.disabled = true;
-  loader.style.display = "block";
-  noTests.style.display = "none";
+    uploadBtn.disabled = true;
+    loader.style.display = "block";
+    noTests.style.display = "none";
 
-  try {
-    const formData = new FormData();
-    formData.append("file", file);
+    try {
+      const formData = new FormData();
+      formData.append("file", file);
 
-    const res = await fetch(
-      "https://n8n.kashinath.net/webhook/emc-tests-from-datasheet",
-      {
-        method: "POST",
-        headers: {
-          "x-flux-auth": "mkdMR7Euq18d"   // no Content-Type here
-        },
-        body: formData
+      const res = await fetch(
+        "https://n8n.kashinath.net/webhook/emc-tests-from-datasheet",
+        {
+          method: "POST",
+          headers: {
+            "x-flux-auth": "mkdMR7Euq18d"
+          },
+          body: formData
+        }
+      );
+
+      const text = await res.text();
+      let testsJson = null;
+      try { testsJson = JSON.parse(text); } catch (e) {
+        console.error("JSON parse error:", e, text);
       }
-    );
 
-    const text = await res.text();
-    let testsJson = null;
-    try { testsJson = JSON.parse(text); } catch (e) {
-      console.error("JSON parse error:", e, text);
-    }
+      if (!res.ok || !testsJson) {
+        console.error("n8n error:", text);
+        noTests.style.display = "block";
+        return;
+      }
 
-    if (!res.ok || !testsJson) {
-      console.error("n8n error:", text);
+      const testsArray = Array.isArray(testsJson) ? testsJson : [];
+      fullTestData = testsArray;
+      renderTests(fullTestData);
+
+    } catch (err) {
+      console.error(err);
       noTests.style.display = "block";
-      return;
+    } finally {
+      loader.style.display = "none";
+      uploadBtn.disabled = false;
     }
-
-    // Your latest output is already an array -> group it
-    const grouped = groupByStandard(testsJson);
-    fullTestData = grouped;
-    renderTests(fullTestData);
-
-  } catch (err) {
-    console.error(err);
-    noTests.style.display = "block";
-  } finally {
-    loader.style.display = "none";
-    uploadBtn.disabled = false;
   }
-}
 
-
-  function renderTests(standards) {
+  // Render flat list of tests (no grouping by standard)
+  function renderTests(tests) {
     const container = document.getElementById("testList");
     const tag = document.querySelector(".tag");
     const loader = document.getElementById("loader");
@@ -743,7 +691,7 @@
     loader.style.display = "none";
     container.innerHTML = "";
 
-    if (!standards.length) {
+    if (!tests.length) {
       noTests.style.display = "block";
       if (tag) tag.style.display = "none";
       return;
@@ -751,159 +699,99 @@
 
     if (tag) tag.style.display = "inline-flex";
 
-    standards.forEach((standard, standardIndex) => {
-      const card = document.createElement("div");
-      card.className = "standard-card";
-      card.setAttribute("data-standard-name", standard.Standard);
-      card.id = `standard-${standardIndex}`;
+    tests.forEach(test => {
+      const testItem = document.createElement("div");
+      testItem.className = "test-item";
 
-      const header = document.createElement("div");
-      header.className = "standard-header";
+      const testName = test.test_name || "";
+      const applicability = test.applicability || "";
+      const testCode = test.test_code || "";
+      const standardsArr = test.standards_applicable || [];
+      const standardsText = standardsArr.join(", ");
 
-      const testItemText =
-  standard.ApplicableTests && standard.ApplicableTests.length
-    ? `<div class="standard-testitem">${standard.ApplicableTests.length} tests detected</div>`
-    : "";
+      const hours = test.hours ?? null;
+      const euros = test.price_euros ?? null;
 
+      // Store data for payload
+      testItem.dataset.testName = testName;
+      testItem.dataset.applicability = applicability;
+      testItem.dataset.testCode = testCode;
+      testItem.dataset.standards = standardsText;
+      testItem.dataset.hours = hours !== null ? String(hours) : "";
+      testItem.dataset.priceEuros = euros !== null ? String(euros) : "";
 
-      header.innerHTML = `
-        <div class="standard-title-group">
-          <div class="standard-title">
-            ${standard.Standard}
+      let extraFieldsHTML = "";
+      if (testName && testName.includes("RI")) {
+        extraFieldsHTML += `
+          <div class="extra-inputs">
+            <label>Units:
+              <input type="number" min="1" class="extra-input" data-field="units">
+            </label>
+          </div>`;
+      }
+
+      testItem.innerHTML = `
+        <input type="checkbox" class="checkbox">
+        <div class="test-content-child">
+          <div class="test-name">${testName}</div>
+          <div class="test-code">${testCode}</div>
+          <div class="test-applicability">
+            <strong>Applicability:</strong> ${applicability}
           </div>
-          <div class="standard-description">${standard.StandardDescription || ""}</div>
-          ${testItemText}
+          ${standardsText ? `<div class="test-standards"><strong>Standards:</strong> ${standardsText}</div>` : ""}
+          ${(hours !== null || euros !== null) ? `
+            <div class="test-metrics">
+              ${hours !== null ? `<span class="metric-pill">${hours} h</span>` : ""}
+              ${euros !== null ? `<span class="metric-pill">€ ${euros}</span>` : ""}
+            </div>
+          ` : ""}
+          ${extraFieldsHTML}
         </div>
-        <span class="toggle-icon">▶</span>
       `;
 
-      const content = document.createElement("div");
-      content.className = "applicable-tests";
-      const testList = document.createElement("div");
-      testList.className = "test-item-list";
-      content.appendChild(testList);
+      const checkbox = testItem.querySelector(".checkbox");
+      checkbox.addEventListener("change", () => {
+        testItem.classList.toggle("selected", checkbox.checked);
+        updateSelectedTests();
+      });
 
-      (standard.ApplicableTests || []).forEach((test) => {
-        const testItem = document.createElement("div");
-        testItem.className = "test-item";
-        testItem.setAttribute("data-test-name", test.Name || "");
+      testItem.querySelectorAll(".extra-input").forEach(input => {
+        input.addEventListener("input", updateSelectedTests);
+      });
 
-        const fullName =
-          test.FullName || `${standard.Standard} -- ${test.Name || ""}`;
-        testItem.setAttribute("data-full-name", fullName);
-
-        const fullId = fullName.replace(/\s/g, "_");
-        testItem.setAttribute("data-full-id", fullId);
-
-        let extraFieldsHTML = "";
-        if (test.Name && test.Name.includes("RI")) {
-          extraFieldsHTML += `
-            <div class="extra-inputs">
-              <label>Units:
-                <input type="number" min="1" class="extra-input" data-field="units">
-              </label>
-            </div>`;
+      testItem.addEventListener("click", e => {
+        if (e.target.tagName !== "INPUT") {
+          checkbox.checked = !checkbox.checked;
+          checkbox.dispatchEvent(new Event("change"));
         }
-
-        const applicability = test.Applicability || "";
-
-        testItem.innerHTML = `
-          <input type="checkbox" class="checkbox" id="${fullId}">
-          <div class="test-content-child">
-            <div class="test-name">${test.Name || ""}</div>
-            <div class="test-code">${fullName}</div>
-            <div class="test-applicability">
-              <strong>Applicability:</strong> ${applicability}
-            </div>
-           
-          </div>
-        `;
-
-        const checkbox = testItem.querySelector(".checkbox");
-        checkbox.addEventListener("change", () => {
-          testItem.classList.toggle("selected", checkbox.checked);
-          updateSelectedTests();
-        });
-
-        testItem.querySelectorAll(".extra-input").forEach(input => {
-          input.addEventListener("input", updateSelectedTests);
-        });
-
-        testItem.addEventListener("click", e => {
-          if (e.target.tagName !== "INPUT") {
-            checkbox.checked = !checkbox.checked;
-            checkbox.dispatchEvent(new Event("change"));
-          }
-        });
-
-        testList.appendChild(testItem);
       });
 
-      header.addEventListener("click", () => {
-        card.classList.toggle("expanded");
-      });
-
-      card.appendChild(header);
-      card.appendChild(content);
-      container.appendChild(card);
+      container.appendChild(testItem);
     });
   }
-// Merge all rows with the same Standard into a single card
-function groupByStandard(items) {
-  const map = new Map();
-
-  (items || []).forEach(entry => {
-    const key = entry.Standard || "Unknown standard";
-
-    if (!map.has(key)) {
-      map.set(key, {
-        Standard: entry.Standard || key,
-        StandardDescription: entry.StandardDescription || "",
-        ApplicableTests: []
-      });
-    }
-
-    const group = map.get(key);
-
-    (entry.ApplicableTests || []).forEach(t => {
-      const name = t.Name || entry.TestItem || "";
-      group.ApplicableTests.push({
-        Name: name,
-        Applicability: t.Applicability || "",
-        FullName: t.FullName || `${entry.Standard} -- ${name}`
-      });
-    });
-  });
-
-  return Array.from(map.values());
-}
 
   function updateSelectedTests() {
     selectedTests = [];
 
-    document.querySelectorAll(".standard-card").forEach(standardCard => {
-      const standardName = standardCard.getAttribute("data-standard-name");
+    document.querySelectorAll(".test-item").forEach(testItem => {
+      const checkbox = testItem.querySelector(".checkbox");
+      if (checkbox && checkbox.checked) {
+        const obj = {
+          test_code: testItem.dataset.testCode,
+          test_name: testItem.dataset.testName,
+          applicability: testItem.dataset.applicability,
+          standards_applicable: testItem.dataset.standards,
+          hours: testItem.dataset.hours ? Number(testItem.dataset.hours) : null,
+          price_euros: testItem.dataset.priceEuros ? Number(testItem.dataset.priceEuros) : null
+        };
 
-      standardCard.querySelectorAll(".test-item").forEach(testItem => {
-        const checkbox = testItem.querySelector(".checkbox");
-        if (checkbox && checkbox.checked) {
-          const testName = testItem.getAttribute("data-test-name");
-          const fullName = testItem.getAttribute("data-full-name");
+        testItem.querySelectorAll(".extra-input").forEach(input => {
+          const val = input.value.trim();
+          if (val) obj[input.dataset.field] = Number(val);
+        });
 
-          const obj = {
-            test_code: fullName || `${standardName} -- ${testName}`,
-            standard: standardName,
-            applicable_test: testName
-          };
-
-          testItem.querySelectorAll(".extra-input").forEach(input => {
-            const val = input.value.trim();
-            if (val) obj[input.dataset.field] = Number(val);
-          });
-
-          selectedTests.push(obj);
-        }
-      });
+        selectedTests.push(obj);
+      }
     });
 
     document.getElementById("calculateBtn").disabled = selectedTests.length === 0;

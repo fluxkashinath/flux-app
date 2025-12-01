@@ -15,7 +15,6 @@
 
     html, body {
       height: 100%;
-      overflow: hidden;
     }
 
     body {
@@ -24,15 +23,16 @@
       color: #222;
       padding: 20px;
       min-height: 100vh;
-      overflow: auto;
+      overflow: hidden; /* fixed-page app on desktop */
     }
 
     .app-shell {
-        max-width: 1440px;
-  margin: 0 auto;
-  height: 100%;          /* full height */
-  display: flex;
-  flex-direction: column;
+      max-width: 1440px;
+      margin: 0 auto;
+      height: 100%;
+      max-height: 100vh;
+      display: flex;
+      flex-direction: column;
     }
 
     .app-header {
@@ -46,12 +46,11 @@
 
     /* Main layout */
     .app {
-        flex: 1;
-  height: 100%; /* NEW */
-  display: grid;
-  grid-template-columns: 150px 1.35fr 0.95fr;
-  gap: 18px;
-  min-height: 0;
+      flex: 1;
+      display: grid;
+      grid-template-columns: 150px 1.35fr 0.95fr;
+      gap: 18px;
+      min-height: 0;
     }
 
     .panel {
@@ -62,15 +61,12 @@
       display: flex;
       flex-direction: column;
       border: 1px solid rgba(148, 163, 184, 0.18);
-      min-height: 0;
+      min-height: 0; /* allow inner scroll */
     }
 
-    /* Middle panel fills available height */
     .panel.middle-panel {
-        height: 100%;
-  display: flex;
-  flex-direction: column;
-  min-height: 0; /* IMPORTANT */
+      height: 100%;
+      max-height: 100%;
     }
 
     /* Sidebar */
@@ -217,17 +213,20 @@
 
     /* Scroll area for tests */
     #testList {
-        flex: 1;
-  overflow-y: auto;
-  min-height: 0;
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      overflow-y: auto;
+      padding-right: 4px;
+      padding-top: 1px;
+      min-height: 0;
     }
 
-    /* Single test cards */
     .test-item {
       display: flex;
       align-items: flex-start;
       gap: 10px;
-      margin-bottom: 5px; 
       padding: 9px 10px;
       border-radius: 9px;
       background: #ffffff;
@@ -323,27 +322,26 @@
       font-size: 11px;
     }
 
-    /* Responsive centered loader overlay */
-    .loader-overlay {
-      position: absolute;
-      inset: 0;
-      display: none;
-      align-items: center;
-      justify-content: center;
-      z-index: 2;
-    }
-
-    .loader-circle {
-      width: clamp(40px, 7vw, 70px);
-      height: clamp(40px, 7vw, 70px);
-      border-radius: 50%;
-      border: clamp(4px, 0.8vw, 6px) solid #e5e7eb;
+    /* Responsive centred loader */
+    .loader {
+      width: clamp(40px, 6vw, 70px);
+      height: clamp(40px, 6vw, 70px);
+      border: clamp(4px, 0.6vw, 6px) solid #e5e7eb;
       border-top-color: #2563eb;
+      border-radius: 50%;
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
       animation: spin 1s linear infinite;
+      display: none;
+      z-index: 2;
+      background: transparent;
     }
 
     @keyframes spin {
-      to { transform: rotate(360deg); }
+      0%   { transform: translate(-50%, -50%) rotate(0deg); }
+      100% { transform: translate(-50%, -50%) rotate(360deg); }
     }
 
     #noTests {
@@ -385,12 +383,27 @@
       color: #fcfdff;
     }
 
+    .quote-wrapper {
+      position: relative;
+      flex: 1;
+      min-height: 0;
+      display: flex;
+      flex-direction: column;
+    }
+
+    #quoteBox {
+      flex: 1;
+      overflow-y: auto;
+      padding-right: 4px;
+    }
+
     .price-item {
       background: #eef5ff;
       border-radius: 9px;
       padding: 9px 11px;
       display: flex;
-      flex-direction: column;
+      justify-content: space-between;
+      align-items: flex-start;
       font-weight: 500;
       font-size: 13px;
       margin-bottom: 5px;
@@ -404,22 +417,20 @@
 
     .price-name {
       font-weight: 600;
+      margin-bottom: 3px;
       color: #111827;
-      margin-bottom: 4px;
     }
 
     .price-meta {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 10px;
-      font-size: 12px;
-      color: #374151;
-      justify-content: space-between;
+      font-size: 11px;
+      color: #4b5563;
     }
 
-    .price-total-line {
-      margin-left: auto;
+    .price-total-label {
+      font-size: 12px;
       font-weight: 600;
+      white-space: nowrap;
+      margin-left: 8px;
     }
 
     .price-total {
@@ -444,7 +455,7 @@
       height: 60px;
     }
 
-    #generatePDF {
+    .primary-btn {
       padding: 11px;
       width: 100%;
       border-radius: 999px;
@@ -456,13 +467,19 @@
       margin-top: 10px;
       transition: background 0.18s ease, box-shadow 0.18s ease, transform 0.08s ease;
       font-size: 13px;
-      display: none;
     }
 
-    #generatePDF:hover {
+    .primary-btn:hover:not(:disabled) {
       background: #1d4ed8;
       box-shadow: 0 10px 22px rgba(37, 99, 235, 0.35);
       transform: translateY(-1px);
+    }
+
+    .primary-btn:disabled {
+      background: #9bbbef;
+      cursor: not-allowed;
+      box-shadow: none;
+      transform: none;
     }
 
     .muted {
@@ -490,7 +507,14 @@
     }
 
     @media (max-width: 768px) {
-      body { padding: 14px; }
+      body {
+        padding: 14px;
+        overflow: auto; /* allow normal page scroll on small screens */
+      }
+      .app-shell {
+        height: auto;
+        max-height: none;
+      }
       .app-header { flex-direction: column; align-items: flex-start; }
       .app {
         grid-template-columns: 1fr;
@@ -501,6 +525,9 @@
       .panel.middle-panel {
         height: auto;
         max-height: none;
+      }
+      #quoteBox {
+        max-height: 260px;
       }
       .sheet-pill {
         font-size: 12px;
@@ -542,11 +569,7 @@
         </div>
 
         <div class="tag" style="display:none;">Detected Compliance Tests</div>
-
-        <!-- centered overlay loader -->
-        <div id="loader" class="loader-overlay">
-          <div class="loader-circle"></div>
-        </div>
+        <div id="loader" class="loader"></div>
 
         <div id="noTests">
           No tests found. The file may be empty of tests or AI failed to parse it.<br>
@@ -563,10 +586,14 @@
         <h3>Final quotation</h3>
         <span class="live" style="display: inline-flex;">Live preview</span>
       </div>
-      <div id="quoteBox">
-        <em>Prices will load once tests are selected…</em>
+
+      <div class="quote-wrapper">
+        <div id="quoteBox">
+          <em>Prices will load once tests are selected…</em>
+        </div>
       </div>
-      <button id="generatePDF">Download PDF</button>
+
+      <button id="generatePDF" class="primary-btn" disabled>Download PDF</button>
     </section>
 
   </main>
@@ -607,24 +634,26 @@
     document.getElementById("noTests").style.display = "none";
 
     const msg = document.getElementById("initialMessage");
-    if (msg) msg.style.display = "none";
+    if (msg) msg.style.display = "flex";
 
     const tag = document.querySelector(".tag");
     if (tag) tag.style.display = "none";
 
     document.getElementById("quoteBox").innerHTML =
       `<em>Prices will load once tests are selected…</em>`;
-    document.getElementById("generatePDF").style.display = "none";
+    document.getElementById("generatePDF").disabled = true;
   }
 
   async function uploadFile(file) {
     const uploadBtn = document.getElementById("uploadTrigger");
     const loader = document.getElementById("loader");
     const noTests = document.getElementById("noTests");
+    const msg = document.getElementById("initialMessage");
 
     uploadBtn.disabled = true;
-    loader.style.display = "flex";
+    loader.style.display = "block";
     noTests.style.display = "none";
+    if (msg) msg.style.display = "none";
 
     try {
       const formData = new FormData();
@@ -672,6 +701,7 @@
     const tag = document.querySelector(".tag");
     const loader = document.getElementById("loader");
     const noTests = document.getElementById("noTests");
+    const msg = document.getElementById("initialMessage");
 
     loader.style.display = "none";
     container.innerHTML = "";
@@ -679,9 +709,11 @@
     if (!tests.length) {
       noTests.style.display = "block";
       if (tag) tag.style.display = "none";
+      if (msg) msg.style.display = "flex";
       return;
     }
 
+    if (msg) msg.style.display = "none";
     if (tag) tag.style.display = "inline-flex";
 
     tests.forEach(test => {
@@ -782,54 +814,55 @@
       }
     });
 
-    renderLiveQuoteFromSelection();
+    rebuildQuote();
   }
 
-  // Live quote based only on selectedTests (hours * price_euros)
-  function renderLiveQuoteFromSelection() {
+  function rebuildQuote() {
     const quoteBox = document.getElementById("quoteBox");
     const pdfBtn = document.getElementById("generatePDF");
 
     if (!selectedTests.length) {
       quoteBox.innerHTML = `<em>Prices will load once tests are selected…</em>`;
-      pdfBtn.style.display = "none";
+      pdfBtn.disabled = true;
       return;
     }
 
     let html = "";
     let grandTotal = 0;
 
-    selectedTests.forEach(test => {
-      const name = test.test_name || test.test_code || "Unnamed test";
-      const rawHours = test.hours;
-      const rawRate = test.price_euros;
+    selectedTests.forEach(item => {
+      const name = item.test_name || item.test_code || "Unnamed test";
+      const hours = typeof item.hours === "number" ? item.hours : null;
+      const rate = typeof item.price_euros === "number" ? item.price_euros : null;
+      const units = typeof item.units === "number" && item.units > 0 ? item.units : 1;
 
-      const hasHours = typeof rawHours === "number" && !Number.isNaN(rawHours);
-      const hasRate  = typeof rawRate === "number" && !Number.isNaN(rawRate);
+      const effectiveHours = hours !== null ? hours * units : null;
+      const lineTotal = (effectiveHours !== null && rate !== null)
+        ? effectiveHours * rate
+        : null;
 
-      const hoursLabel = hasHours ? rawHours : "n/a";
-      const rateLabel  = hasRate ? `€ ${rawRate}` : "n/a";
+      const hoursLabel = effectiveHours !== null ? effectiveHours : "n/a";
+      const rateLabel = rate !== null ? `€ ${rate}` : "n/a";
+      const totalLabel = lineTotal !== null ? `Total: € ${lineTotal.toFixed(2)}` : "Total: n/a";
 
-      const lineTotal = (hasHours && hasRate) ? rawHours * rawRate : null;
-      const totalLabel = lineTotal !== null ? `€ ${lineTotal.toFixed(2)}` : "n/a";
-
-      if (lineTotal !== null) grandTotal += lineTotal;
+      if (lineTotal !== null && Number.isFinite(lineTotal)) {
+        grandTotal += lineTotal;
+      }
 
       html += `
         <div class="price-item">
-          <div class="price-name">${name}</div>
-          <div class="price-meta">
-            <span>Hours: <strong>${hoursLabel}</strong></span>
-            <span>Rate: <strong>${rateLabel}</strong></span>
-            <span class="price-total-line">Total: <strong>${totalLabel}</strong></span>
+          <div>
+            <div class="price-name">${name}</div>
+            <div class="price-meta">Hours: ${hoursLabel} &nbsp; | &nbsp; Rate: ${rateLabel}</div>
           </div>
+          <div class="price-total-label">${totalLabel}</div>
         </div>
       `;
     });
 
     html += `<div class="price-total">Grand Total: € ${grandTotal.toFixed(2)}</div>`;
     quoteBox.innerHTML = html;
-    pdfBtn.style.display = "block";
+    pdfBtn.disabled = false;
   }
 
   async function generatePDF() {
@@ -841,34 +874,29 @@
     const pageHeight = doc.internal.pageSize.getHeight();
     const marginX = 40;
 
-    // Build rows from current selection
-    const rows = [];
-    let grandTotal = 0;
+    // Build rows from selectedTests
+    const rows = selectedTests.map(item => {
+      const name = item.test_name || item.test_code || "Unnamed test";
+      const hours = typeof item.hours === "number" ? item.hours : null;
+      const rate = typeof item.price_euros === "number" ? item.price_euros : null;
+      const units = typeof item.units === "number" && item.units > 0 ? item.units : 1;
 
-    selectedTests.forEach(test => {
-      const name = test.test_name || test.test_code || "Unnamed test";
-      const rawHours = test.hours;
-      const rawRate = test.price_euros;
+      const effectiveHours = hours !== null ? hours * units : null;
+      const lineTotal = (effectiveHours !== null && rate !== null)
+        ? effectiveHours * rate
+        : null;
 
-      const hasHours = typeof rawHours === "number" && !Number.isNaN(rawHours);
-      const hasRate  = typeof rawRate === "number" && !Number.isNaN(rawRate);
-
-      const hoursLabel = hasHours ? String(rawHours) : "n/a";
-      const rateLabel  = hasRate ? `€ ${rawRate}` : "n/a";
-
-      const lineTotal = (hasHours && hasRate) ? rawHours * rawRate : null;
-      const totalLabel = lineTotal !== null ? `€ ${lineTotal.toFixed(2)}` : "n/a";
-
-      if (lineTotal !== null) grandTotal += lineTotal;
-
-      rows.push({
-        testName: name,
-        hoursLabel,
-        rateLabel,
-        totalLabel,
-        numericTotal: lineTotal || 0
-      });
+      return {
+        test: name,
+        hours: effectiveHours,
+        rate,
+        lineTotal
+      };
     });
+
+    const grandTotal = rows.reduce((sum, r) =>
+      (r.lineTotal !== null && Number.isFinite(r.lineTotal)) ? sum + r.lineTotal : sum, 0
+    );
 
     let y = 40;
     const logoImg = document.querySelector(".logo-wrap img");
@@ -890,8 +918,8 @@
     doc.setFontSize(10);
     const headerX = pageWidth - marginX - 180;
     doc.text(`Date: ${dateStr}`, headerX, y + 10);
-    // doc.text(`Quote #: ${quoteNumber}`, headerX, y + 25);
-    // doc.text(validText, headerX, y + 40);
+    doc.text(`Quote #: ${quoteNumber}`, headerX, y + 25);
+    doc.text(validText, headerX, y + 40);
 
     doc.setLineWidth(0.7);
     doc.line(marginX, lineY, pageWidth - marginX, lineY);
@@ -911,9 +939,12 @@
 
     const tableX = marginX;
     const tableWidth = pageWidth - marginX * 2;
-    const colHoursWidth = 60;
-    const colRateWidth = 80;
-    const colDescWidth = tableWidth - colHoursWidth - colRateWidth - 80; // 80 for Total column
+
+    // Column positions for: Test | Hours | Rate | Total
+    const colTestX = tableX + 10;
+    const colHoursX = tableX + tableWidth * 0.55;
+    const colRateX  = tableX + tableWidth * 0.72;
+    const colTotalX = tableX + tableWidth - 10;
 
     function drawTableHeader(yPos) {
       doc.setFillColor(210, 230, 225);
@@ -922,11 +953,10 @@
       doc.setFont("helvetica", "bold");
       doc.setFontSize(11);
       const headerY = yPos + 15;
-      
-      doc.text("Test", tableX + colHoursWidth + 10, headerY);
-      doc.text("Hours", tableX + 10, headerY);
-      doc.text("Rate", tableX + colHoursWidth + colDescWidth + 5, headerY, { align: "right" });
-      doc.text("Total", tableX + colHoursWidth + colDescWidth + colRateWidth + 5, headerY, { align: "right" });
+      doc.text("Test", colTestX, headerY);
+      doc.text("Hours", colHoursX, headerY);
+      doc.text("Rate", colRateX, headerY, { align: "right" });
+      doc.text("Total", colTotalX, headerY, { align: "right" });
       return yPos + 26;
     }
 
@@ -946,11 +976,15 @@
       const rowY = y + 15;
       doc.setFont("helvetica", "normal");
       doc.setFontSize(10);
-     
-      doc.text(row.testName, tableX + colHoursWidth + 10, rowY);
-      doc.text(row.hoursLabel, tableX + 10, rowY);
-      doc.text(row.rateLabel, tableX + colHoursWidth + colDescWidth + 5, rowY, { align: "right" });
-      doc.text(row.totalLabel, tableX + colHoursWidth + colDescWidth + colRateWidth + 5, rowY, { align: "right" });
+
+      const hoursLabel = row.hours !== null ? String(row.hours) : "n/a";
+      const rateLabel = row.rate !== null ? `€ ${row.rate}` : "n/a";
+      const totalLabel = row.lineTotal !== null ? `€ ${row.lineTotal.toFixed(2)}` : "n/a";
+
+      doc.text(row.test, colTestX, rowY);
+      doc.text(hoursLabel, colHoursX, rowY);
+      doc.text(rateLabel, colRateX, rowY, { align: "right" });
+      doc.text(totalLabel, colTotalX, rowY, { align: "right" });
 
       y += 26;
     });
@@ -959,13 +993,8 @@
     doc.setFont("helvetica", "bold");
     doc.setFontSize(11);
     doc.setLineWidth(0.5);
-    doc.line(
-      tableX + colHoursWidth + colDescWidth + colRateWidth,
-      y - 12,
-      tableX + tableWidth,
-      y - 12
-    );
-    doc.text("Grand Total:", tableX + colHoursWidth + colDescWidth + colRateWidth + 5, y, { align: "right" });
+    doc.line(tableX + tableWidth * 0.65, y - 12, tableX + tableWidth, y - 12);
+    doc.text("Grand Total:", tableX + tableWidth * 0.78, y, { align: "right" });
     doc.text(`€ ${grandTotal.toFixed(2)}`, tableX + tableWidth, y, { align: "right" });
 
     doc.save("Quotation.pdf");

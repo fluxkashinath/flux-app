@@ -762,7 +762,7 @@
             <span><strong>Hours:</strong> ${hoursLabel}</span>
             <span><strong>Price:</strong> ${priceLabel}</span>
           </div>
-          ${extraFieldsHTML}
+         
         </div>
       `;
 
@@ -1005,7 +1005,7 @@
     doc.text("Grand Total:", tableX + tableWidth * 0.78, y, { align: "right" });
     doc.text(`€ ${grandTotal.toFixed(2)}`, tableX + tableWidth, y, { align: "right" });
 
-    doc.save("Quotation.pdf");
+    doc.save("Flux-Quotation.pdf");
   }
 </script>
 </body>

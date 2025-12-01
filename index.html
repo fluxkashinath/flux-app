@@ -22,13 +22,14 @@
       background: radial-gradient(circle at top left, #e0f2ff 0, #f4f7f9 40%, #eef2f7 100%);
       color: #222;
       padding: 20px;
-      overflow: hidden; /* no page scroll; only inner panels scroll */
+      min-height: 100vh;  /* page can grow but at least viewport height */
+      overflow: auto;     /* restore normal scroll for responsiveness */
     }
 
     .app-shell {
       max-width: 1440px;
       margin: 0 auto;
-      height: 100%;
+      min-height: 100%;
       display: flex;
       flex-direction: column;
     }
@@ -48,7 +49,7 @@
       display: grid;
       grid-template-columns: 150px 1.35fr 0.95fr;
       gap: 18px;
-      min-height: 0; /* so inner panels can scroll */
+      min-height: 0; /* so inner flex children can scroll */
     }
 
     .panel {
@@ -477,7 +478,7 @@
     }
 
     @media (max-width: 768px) {
-      body { padding: 14px; overflow:auto; }
+      body { padding: 14px; }
       .app-header { flex-direction: column; align-items: flex-start; }
       .app {
         grid-template-columns: 1fr;

@@ -13,17 +13,16 @@
   <style>
     * { box-sizing: border-box; margin: 0; padding: 0; }
 
-    html {
+    html, body {
       height: 100%;
     }
 
     body {
-      height: 100%;
       font-family: 'Inter', system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
       background: radial-gradient(circle at top left, #e0f2ff 0, #f4f7f9 40%, #eef2f7 100%);
       color: #222;
       padding: 20px;
-      overflow: hidden; /* no main page vertical scroll on desktop */
+      overflow: hidden; /* no page scroll; only inner panels scroll */
     }
 
     .app-shell {
@@ -38,73 +37,18 @@
       display: flex;
       align-items: center;
       justify-content: space-between;
-      margin-bottom: 12px;
+      margin-bottom: 22px;
       gap: 16px;
-      flex-shrink: 0;
-    }
-
-    .brand-left {
-      display: flex;
-      align-items: center;
-      gap: 14px;
-    }
-
-    .brand-logo {
-      width: 42px;
-      height: 42px;
-      border-radius: 12px;
-      background: #0b5bd8;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      overflow: hidden;
-      box-shadow: 0 4px 12px rgba(11, 91, 216, 0.35);
-    }
-
-    .brand-logo img {
-      max-width: 90%;
-      max-height: 90%;
-    }
-
-    .brand-text h1 {
-      font-size: 22px;
-      font-weight: 700;
-      letter-spacing: 0.02em;
-      color: #0b264b;
-    }
-
-    .brand-text p {
-      font-size: 13px;
-      color: #6c798b;
-    }
-
-    .header-right {
-      display: flex;
-      align-items: center;
-      gap: 10px;
-      font-size: 12px;
-      color: #6c798b;
-    }
-
-    .badge {
-      padding: 4px 10px;
-      border-radius: 999px;
-      background: rgba(11, 91, 216, 0.08);
-      color: #0b5bd8;
-      font-weight: 600;
-      font-size: 11px;
-      letter-spacing: 0.05em;
-      text-transform: uppercase;
+      min-height: 0;
     }
 
     /* Main layout */
     .app {
+      flex: 1;
       display: grid;
       grid-template-columns: 150px 1.35fr 0.95fr;
       gap: 18px;
-      flex: 1;
-      min-height: 0; /* important: allow children to control overflow */
-      align-items: stretch;
+      min-height: 0; /* so inner panels can scroll */
     }
 
     .panel {
@@ -115,15 +59,13 @@
       display: flex;
       flex-direction: column;
       border: 1px solid rgba(148, 163, 184, 0.18);
-      min-height: 0; /* so that flex/grid can size correctly */
+      min-height: 0;
     }
 
-    /* Middle panel uses all available height and scrolls internally */
+    /* Middle panel fills available height */
     .panel.middle-panel {
       height: 100%;
-      min-height: 0;
-      display: flex;
-      flex-direction: column;
+      max-height: 100%;
     }
 
     /* Sidebar */
@@ -150,10 +92,10 @@
       max-height: 82%;
     }
 
-    .sidebar-caption {
-      font-size: 12px;
-      color: #6b7280;
-      line-height: 1.4;
+    .sidebar-footer {
+      margin-top: auto;
+      font-size: 11px;
+      color: #9ca3af;
     }
 
     .upload-btn {
@@ -184,12 +126,6 @@
       transform: none;
     }
 
-    .sidebar-footer {
-      margin-top: auto;
-      font-size: 11px;
-      color: #9ca3af;
-    }
-
     /* Middle panel */
     .sheet-pill {
       background: #e3f2fd;
@@ -203,10 +139,10 @@
       white-space: nowrap;
       overflow: hidden;
       text-overflow: ellipsis;
-      flex-shrink: 0;
     }
 
     .detected-box {
+      position: relative;
       border-radius: 14px;
       background: #f9fafb;
       padding: 18px;
@@ -215,7 +151,19 @@
       gap: 14px;
       flex: 1;
       border: 1px dashed rgba(148, 163, 184, 0.6);
-      min-height: 0; /* critical for inner scroll area */
+      min-height: 0;
+    }
+
+    .initial-message {
+      flex: 1;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      text-align: center;
+      color: #6b7280;
+      font-size: 15px;
+      font-weight: 500;
+      padding: 20px;
     }
 
     .tag {
@@ -262,7 +210,7 @@
       box-shadow: 0 0 0 5px rgba(34, 197, 94, 0.2);
     }
 
-    /* Scroll area for tests: this is where vertical scroll happens */
+    /* Scroll area for tests */
     #testList {
       flex: 1;
       display: flex;
@@ -284,7 +232,8 @@
       background: #ffffff;
       border: 1px solid rgba(148, 163, 184, 0.6);
       box-shadow: 0 4px 10px rgba(15, 23, 42, 0.03);
-      transition: background 0.15s ease, border-color 0.15s ease, transform 0.08s ease, box-shadow 0.12s ease;
+      transition: background 0.15s ease, border-color 0.15s ease,
+                  transform 0.08s ease, box-shadow 0.12s ease;
       cursor: pointer;
     }
 
@@ -340,22 +289,14 @@
       margin-top: 2px;
     }
 
-    /* New: hours / price pills */
-    .test-metrics {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 6px;
-      margin-top: 4px;
+    .test-meta-row {
       font-size: 11px;
-      color: #374151;
-    }
-
-    .metric-pill {
-      padding: 3px 7px;
-      border-radius: 999px;
-      background: #eff6ff;
-      border: 1px solid #dbeafe;
-      font-weight: 500;
+      color: #4b5563;
+      margin-top: 4px;
+      display: flex;
+      justify-content: space-between;
+      gap: 8px;
+      flex-wrap: wrap;
     }
 
     .extra-inputs {
@@ -381,20 +322,26 @@
       font-size: 11px;
     }
 
-    /* Loader */
+    /* Bigger centered loader */
     .loader {
-      width: 40px;
-      height: 40px;
-      border: 4px solid #e5e7eb;
+      width: 70px;
+      height: 70px;
+      border: 6px solid #e5e7eb;
       border-top-color: #2563eb;
       border-radius: 50%;
       animation: spin 1s linear infinite;
-      margin: 4px auto 4px;
+      margin: auto;
       display: none;
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      z-index: 2;
+      background: transparent;
     }
 
     @keyframes spin {
-      100% { transform: rotate(360deg); }
+      100% { transform: translate(-50%, -50%) rotate(360deg); }
     }
 
     #noTests {
@@ -489,7 +436,6 @@
       margin-top: 10px;
       transition: background 0.18s ease, box-shadow 0.18s ease, transform 0.08s ease;
       font-size: 13px;
-      flex-shrink: 0;
     }
 
     .continue-btn:hover:not(:disabled),
@@ -531,19 +477,17 @@
     }
 
     @media (max-width: 768px) {
-      body {
-        padding: 14px;
-        overflow: auto; /* allow normal scroll on small screens */
-      }
-      .app-header {
-        flex-direction: column;
-        align-items: flex-start;
-      }
+      body { padding: 14px; overflow:auto; }
+      .app-header { flex-direction: column; align-items: flex-start; }
       .app {
         grid-template-columns: 1fr;
       }
       .panel {
         min-height: auto;
+      }
+      .panel.middle-panel {
+        height: auto;
+        max-height: none;
       }
       .sheet-pill {
         font-size: 12px;
@@ -580,12 +524,18 @@
     <section class="panel middle-panel">
       <div class="sheet-pill" id="fileNameLabel">No file selected</div>
       <div class="detected-box">
+        <div id="initialMessage" class="initial-message">
+          Upload the datasheet to view list of tests
+        </div>
+
         <div class="tag" style="display:none;">Detected Compliance Tests</div>
         <div id="loader" class="loader"></div>
+
         <div id="noTests">
           No tests found. The file may be empty of tests or AI failed to parse it.<br>
           Please retry by uploading the file again.
         </div>
+
         <div id="testList"></div>
         <button class="continue-btn" id="calculateBtn" disabled>Calculate price</button>
       </div>
@@ -639,8 +589,11 @@
     fullTestData = [];
 
     document.getElementById("testList").innerHTML = "";
-    document.getElementById("loader").style.display = "block";
+    document.getElementById("loader").style.display = "none";
     document.getElementById("noTests").style.display = "none";
+
+    const msg = document.getElementById("initialMessage");
+    if (msg) msg.style.display = "none";
 
     const tag = document.querySelector(".tag");
     if (tag) tag.style.display = "none";
@@ -700,7 +653,7 @@
     }
   }
 
-  // Render flat list of tests (no grouping by standard)
+  // Render flat list of tests
   function renderTests(tests) {
     const container = document.getElementById("testList");
     const tag = document.querySelector(".tag");
@@ -727,9 +680,8 @@
       const testCode = test.test_code || "";
       const standardsArr = test.standards_applicable || [];
       const standardsText = standardsArr.join(", ");
-
-      const hours = test.hours ?? null;
-      const euros = test.price_euros ?? null;
+      const hours = (test.hours ?? null);
+      const priceEuros = (test.price_euros ?? null);
 
       // Store data for payload
       testItem.dataset.testName = testName;
@@ -737,7 +689,10 @@
       testItem.dataset.testCode = testCode;
       testItem.dataset.standards = standardsText;
       testItem.dataset.hours = hours !== null ? String(hours) : "";
-      testItem.dataset.priceEuros = euros !== null ? String(euros) : "";
+      testItem.dataset.priceEuros = priceEuros !== null ? String(priceEuros) : "";
+
+      const hoursLabel = hours !== null ? `${hours} h` : "n/a";
+      const priceLabel = priceEuros !== null ? `€ ${priceEuros}` : "n/a";
 
       let extraFieldsHTML = "";
       if (testName && testName.includes("RI")) {
@@ -758,12 +713,10 @@
             <strong>Applicability:</strong> ${applicability}
           </div>
           ${standardsText ? `<div class="test-standards"><strong>Standards:</strong> ${standardsText}</div>` : ""}
-          ${(hours !== null || euros !== null) ? `
-            <div class="test-metrics">
-              ${hours !== null ? `<span class="metric-pill">${hours} h</span>` : ""}
-              ${euros !== null ? `<span class="metric-pill">€ ${euros}</span>` : ""}
-            </div>
-          ` : ""}
+          <div class="test-meta-row">
+            <span><strong>Hours:</strong> ${hoursLabel}</span>
+            <span><strong>Price:</strong> ${priceLabel}</span>
+          </div>
           ${extraFieldsHTML}
         </div>
       `;
@@ -800,9 +753,12 @@
           test_name: testItem.dataset.testName,
           applicability: testItem.dataset.applicability,
           standards_applicable: testItem.dataset.standards,
-          hours: testItem.dataset.hours ? Number(testItem.dataset.hours) : null,
-          price_euros: testItem.dataset.priceEuros ? Number(testItem.dataset.priceEuros) : null
         };
+
+        const hours = testItem.dataset.hours;
+        const priceEuros = testItem.dataset.priceEuros;
+        if (hours) obj.hours = Number(hours);
+        if (priceEuros) obj.price_euros = Number(priceEuros);
 
         testItem.querySelectorAll(".extra-input").forEach(input => {
           const val = input.value.trim();
